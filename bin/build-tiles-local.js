@@ -7,7 +7,7 @@ const JSONStream = require('JSONStream');
 const chibanCount = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'chiban-counts.json'), 'utf8'));
 
 const stream = fs.createReadStream(path.join(__dirname, 'data', 'local-gov.geojson'));
-const streamWrite = fs.createWriteStream(path.join(__dirname, '..', 'dist', 'chiban-local-gov.geojson'));
+const streamWrite = fs.createWriteStream(path.join(__dirname, 'dist', 'chiban-local-gov.geojson'));
 
 const parser = JSONStream.parse('features.*');
 

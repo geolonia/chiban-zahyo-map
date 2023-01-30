@@ -2,22 +2,26 @@
 
 set -ex
 
-// data ディレクトリが存在したら削除
+SCRIPT_DIR=$(cd $(dirname $0); pwd)
 
-if [ -d data ]; then
-  rm -rf data
+if [ -d $SCRIPT_DIR/data ]; then
+  rm -rf $SCRIPT_DIR/data
 fi
 
-mkdir data
-
-if [ -d dist ]; then
-  rm -rf dist
+if [ -d $SCRIPT_DIR/dist ]; then
+  rm -rf $SCRIPT_DIR/dist
 fi
 
-mkdir dist
+mkdir $SCRIPT_DIR/data
+mkdir $SCRIPT_DIR/dist
 
-curl https://nlftp.mlit.go.jp/ksj/gml/data/N03/N03-2021/N03-20210101_GML.zip -o data/local-gov.zip
-unzip data/local-gov.zip -d data/
-mv data/N03-20210101_GML/N03-21_210101.geojson data/local-gov.geojson
-rm -rf data/N03-20210101_GML/ data/local-gov.zip
-curl https://raw.githubusercontent.com/geolonia/moj-counts/main/output.json -o data/chiban-counts.json
+curl https://nlftp.mlit.go.jp/ksj/gml/data/N03/N03-2021/N03-20210101_GML.zip -o $SCRIPT_DIR/data/local-gov.zip
+unzip $SCRIPT_DIR/data/local-gov.zip -d $SCRIPT_DIR/data 
+
+
+#なぜかここで処理が止まる
+
+
+mv $SCRIPT_DIR/data/N03-20210101_GML/N03-21_210101.geojson $SCRIPT_DIR/data/local-gov.geojson
+rm -rf $SCRIPT_DIR/data/N03-20210101_GML/ $SCRIPT_DIR/data/local-gov.zip
+curl https://raw.githubusercontent.com/geolonia/moj-counts/main/output.json -o $SCRIPT_DIR/data/chiban-counts.json

@@ -8,7 +8,7 @@ const turf = require('@turf/turf');
 const chibanCount = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'chiban-counts.json'), 'utf8'));
 
 const stream = fs.createReadStream(path.join(__dirname, 'data', 'local-gov.geojson'));
-const streamWrite = fs.createWriteStream(path.join(__dirname, '..', 'dist', 'chiban-pref.geojson'));
+const streamWrite = fs.createWriteStream(path.join(__dirname, 'dist', 'chiban-pref.geojson'));
 
 const parser = JSONStream.parse('features.*');
 
@@ -32,6 +32,8 @@ stream.pipe(parser)
     }
 
     pref[prefCode].geometries.push(data.geometry.coordinates);
+
+    console.log(`${prefName} を処理中`);
 
   })
   .on('end', function () {
