@@ -18,7 +18,8 @@ const Component = () => {
   React.useEffect(() => {
     const map = new window.geolonia.Map({
       container: mapContainer.current,
-      zoom: 10,
+      zoom: 4,
+      center: [140.14, 37.26],
       hash: true,
       style: "geolonia/basic",
     })
