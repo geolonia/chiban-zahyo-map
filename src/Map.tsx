@@ -45,9 +45,8 @@ const Component = () => {
   React.useEffect(() => {
     const map = new window.geolonia.Map({
       container: mapContainer.current,
-      zoom: 4,
+      zoom: 5,
       center: [140.14, 37.26],
-      hash: true,
       style: mapStyleJSON,
     })
 
@@ -104,7 +103,7 @@ const Component = () => {
         const niniZahyouRate = Math.round(ninni_zahyou / total * 100);
         const kokyoZahyouRate = Math.round(kokyo_zahyou / total * 100);
 
-        const popup = new window.geolonia.Popup({ offset: 25 })
+        new window.geolonia.Popup({ offset: 25 })
           .setLngLat(e.lngLat)
           .setHTML(
             `<div>
