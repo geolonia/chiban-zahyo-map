@@ -88,6 +88,35 @@ const Component = () => {
           }
         })
       }
+
+      // レイヤーをホバーすると、ポップアップを表示する
+      map.on('click', (e:any) => {
+        const features = map.queryRenderedFeatures(e.point);
+
+        if (!features.length) {
+          return;
+        }
+
+        const {name, code} = features[0].properties;
+        // @ts-ignore
+        const {ninni_zahyou, kokyo_zahyou, special_chiban, total } = chibanJSON[code];
+        const popup = new window.geolonia.Popup({ offset: 25 })
+          .setLngLat(e.lngLat)
+          .setHTML(
+            `<div>
+              <h3>${name}</h3>
+              <ul>
+                <li>任意座標: ${ninni_zahyou}</li>
+                <li>公共座標: ${kokyo_zahyou}</li>
+                <li>特殊な地番（数字以外から始まる地番は集計から除外）: ${special_chiban}</li>
+                <li>合計: ${total}</li>
+              </ul>
+            </div>`
+          )
+          .addTo(map);
+      })
+
+
     })
   });
 
