@@ -100,17 +100,24 @@ const Component = () => {
         const {name, code} = features[0].properties;
         // @ts-ignore
         const {ninni_zahyou, kokyo_zahyou, special_chiban, total } = chibanJSON[code];
+
+        const niniZahyouRate = Math.round(ninni_zahyou / total * 100);
+        const kokyoZahyouRate = Math.round(kokyo_zahyou / total * 100);
+
         const popup = new window.geolonia.Popup({ offset: 25 })
           .setLngLat(e.lngLat)
           .setHTML(
             `<div>
               <h3>${name}</h3>
               <ul>
-                <li>任意座標: ${ninni_zahyou}</li>
-                <li>公共座標: ${kokyo_zahyou}</li>
-                <li>特殊な地番（数字以外から始まる地番は集計から除外）: ${special_chiban}</li>
-                <li>合計: ${total}</li>
+                <li>任意座標: ${niniZahyouRate}%（${ninni_zahyou}件）</li>
+                <li>公共座標: ${kokyoZahyouRate}%（${kokyo_zahyou}件）</li>
+                <li>特殊な地番: ${special_chiban}件</li>
+                <li>合計: ${total}件</li>
               </ul>
+              <small>※特殊な地番: 数字以外から始まる地番の集計です。</small>
+              <br>
+              <small>*小数点以下は四捨五入しています。</small>
             </div>`
           )
           .addTo(map);
