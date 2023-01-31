@@ -1,4 +1,6 @@
 import React from 'react';
+import chibanJSON from './chiban-count.json';
+
 declare global {
   interface Window {
     geolonia: any;
@@ -13,47 +15,29 @@ const style = {
 
 const mapStyleJSON = {
   "version": 8,
-  "name": "Basic",
-  "metadata": {},
+  "name": "Chiban Zahyou Style",
   "sources": {
+    "jp-pref": {
+      "type": "vector",
+      "url": "https://cdn.geolonia.com/tiles/japanese-prefectures.json"
+    },
     "jp-local-governments": {
       "type": "vector",
       "url": "https://tileserver.geolonia.com/jp-local-governments/tiles.json?key=YOUR-API-KEY"
-    },
+    }
   },
-  "sprite": "https://cdn.geolonia.com/sprites/basic",
+  "sprite": "https://geoloniamaps.github.io/basic/basic",
   "glyphs": "https://glyphs.geolonia.com/{fontstack}/{range}.pbf",
   "layers": [
     {
       "id": "background",
       "type": "background",
       "paint": {
-        "background-color": "#fff",
-      },
-    },
-    {
-      "id": "geolonia",
-      "type": "fill",
-      "source": "jp-local-governments",
-      "source-layer": "jp-local-governments",
-      "paint": {
-        "fill-color": "#000",
-        "fill-opacity": 0.1,
-      },
-    },
-    {
-      "id": "geolonia-outline",
-      "type": "line",
-      "source": "jp-local-governments",
-      "source-layer": "jp-local-governments",
-      "paint": {
-        "line-color": "#000",
-        "line-width": 1,
-      },
-    },
-  ],
+        "background-color": "#C8C8C8"
+      }
+    }
+  ]
 }
-
 
 const Component = () => {
   const mapContainer = React.useRef(null);
@@ -69,8 +53,42 @@ const Component = () => {
 
     map.on('load', () => {
 
+      for (const prefCode in chibanJSON) {
+        // @ts-ignore
+        const value = chibanJSON[prefCode];
+        const niniZahyouRate = Math.round(value.ninni_zahyou / value.total * 100);
+        // const kokyoZahyouRate = Math.round(value.kokyo_zahyou / value.total * 100);
+
+        map.addLayer({
+          "id": `prefectures-${prefCode}`,
+          "type": "fill",
+          "source": "jp-pref",
+          "source-layer": "prefectures",
+          "filter": ["==", "code", prefCode],
+          "paint": {
+            "fill-color": [
+              "case",
+              // 0~25％
+              ["<=", niniZahyouRate, 25],
+              `#fad647`,
+              // 25~50％
+              ["<=", niniZahyouRate, 50],
+              `#ffcc00`,
+              // 50~75％
+              ["<=", niniZahyouRate, 75],
+              `#f9a824`,
+              // 75~100％
+              ["<=", niniZahyouRate, 100],
+              `#e64919`,
+              // それ以外は、#ffffff を返す
+              "#000000"
+            ],
+            "fill-outline-color": "#ffffff",
+            "fill-opacity": 0.8
+          }
+        })
+      }
     })
-    
   });
 
   return (
