@@ -13,27 +13,47 @@ const style = {
   height: '100vh',
 } as React.CSSProperties;
 
-const legendList: {[key:string]: any} = {
+const legendList: { [key: string]: any } = {
   // 75~100％
   all: {
-    label : `75~100%`,
+    label: `75~100%`,
     color: `#e64919`,
   },
   // 50~75％
   threeQuarter: {
-    label : `50~75%`,
+    label: `50~75%`,
     color: `#f9a824`,
   },
   // 25~50％
   half: {
-    label : `25~50%`,
+    label: `25~50%`,
     color: `#ffcc00`,
   },
   // 0~25％
   quarter: {
-    label : `0~25%`,
+    label: `0~25%`,
     color: `#fad647`,
   }
+}
+
+const fillColorExpression = (niniZahyouRate: number) => {
+  return [
+    "case",
+    // 0~25％
+    ["<=", niniZahyouRate, 25],
+    legendList.quarter.color,
+    // 25~50％
+    ["<=", niniZahyouRate, 50],
+    legendList.half.color,
+    // 50~75％
+    ["<=", niniZahyouRate, 75],
+    legendList.threeQuarter.color,
+    // 75~100％
+    ["<=", niniZahyouRate, 100],
+    legendList.all.color,
+    // それ以外は、#ffffff を返す
+    "#000000"
+  ]
 }
 
 const mapStyleJSON = {
@@ -62,8 +82,13 @@ const mapStyleJSON = {
   ]
 }
 
+const calcZahyouRate = (zahyou: number, total: number) => {
+  return Math.round(zahyou / total * 100);
+}
+
 const Component = () => {
-  const mapContainer = React.useRef(null);
+  const mapContainer = React.useRef<HTMLDivElement>(null);
+  const selectRef = React.useRef<HTMLSelectElement>(null);
 
   React.useEffect(() => {
     const map = new window.geolonia.Map({
@@ -78,9 +103,9 @@ const Component = () => {
       for (const prefCode in chibanJSON) {
         // @ts-ignore
         const value = chibanJSON[prefCode];
-        const niniZahyouRate = Math.round(value.ninni_zahyou / value.total * 100);
-        // const kokyoZahyouRate = Math.round(value.kokyo_zahyou / value.total * 100);
+        const niniZahyouRatePref = calcZahyouRate(value.ninni_zahyou, value.total);
 
+        // 都道府県レイヤーを追加
         map.addLayer({
           "id": `prefectures-${prefCode}`,
           "type": "fill",
@@ -88,39 +113,100 @@ const Component = () => {
           "source-layer": "prefectures",
           "filter": ["==", "code", prefCode],
           "paint": {
-            "fill-color": [
-              "case",
-              // 0~25％
-              ["<=", niniZahyouRate, 25],
-              legendList.quarter.color,
-              // 25~50％
-              ["<=", niniZahyouRate, 50],
-              legendList.half.color,
-              // 50~75％
-              ["<=", niniZahyouRate, 75],
-              legendList.threeQuarter.color,
-              // 75~100％
-              ["<=", niniZahyouRate, 100],
-              legendList.all.color,
-              // それ以外は、#ffffff を返す
-              "#000000"
-            ],
+            "fill-color": fillColorExpression(niniZahyouRatePref),
             "fill-outline-color": "#ffffff",
             "fill-opacity": 0.8
           }
         })
+
+        for (const key in value) {
+
+          const { ninni_zahyou, total } = value[key];
+          const niniZahyouRateCity = calcZahyouRate(ninni_zahyou, total);
+
+          // 数字かどうか判定
+          if (isNaN(Number(key))) {
+            continue;
+          }
+
+          // 市区町村レイヤーを追加
+          map.addLayer({
+            "id": `city-${key}`,
+            "type": "fill",
+            "source": "jp-local-governments",
+            "source-layer": "jp-local-governments",
+            "filter": ["==", "N03_007", key],
+            "paint": {
+              "fill-color": fillColorExpression(niniZahyouRateCity),
+              "fill-outline-color": "#ffffff",
+              "fill-opacity": 0.8
+            },
+            "layout": {
+              "visibility": "none"
+            }
+          })
+
+        }
       }
 
-      map.on('click', (e:any) => {
+      // レイヤーの表示切り替え
+      if (selectRef && selectRef.current) {
+        selectRef.current.addEventListener('change', (e: any) => {
+          const value = e.target.value;
+
+          if (value === 'prefecture') {
+
+            for (const prefCode in chibanJSON) {
+
+              map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', 'visible');
+
+              // @ts-ignore
+              for (const key in chibanJSON[prefCode]) {
+
+                if (isNaN(Number(key))) {
+                  continue;
+                }
+
+                map.setLayoutProperty(`city-${key}`, 'visibility', 'none');
+              }
+            }
+
+          } else {
+
+            for (const prefCode in chibanJSON) {
+
+              map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', 'none');
+
+              // @ts-ignore
+              for (const key in chibanJSON[prefCode]) {
+
+                if (isNaN(Number(key))) {
+                  continue;
+                }
+
+                map.setLayoutProperty(`city-${key}`, 'visibility', 'visible');
+              }
+            }
+          }
+
+        })
+      }
+
+      map.on('click', (e: any) => {
+
+        if (selectRef && selectRef.current && selectRef.current.value === 'city') {
+          return;
+        }
+
         const features = map.queryRenderedFeatures(e.point);
 
         if (!features.length) {
           return;
         }
 
-        const {name, code} = features[0].properties;
+        const { name, code } = features[0].properties;
         // @ts-ignore
-        const {ninni_zahyou, kokyo_zahyou, special_chiban, total } = chibanJSON[code];
+        const { ninni_zahyou, kokyo_zahyou, special_chiban, total } = chibanJSON[code];
 
         const niniZahyouRate = Math.round(ninni_zahyou / total * 100);
         const kokyoZahyouRate = Math.round(kokyo_zahyou / total * 100);
@@ -133,29 +219,79 @@ const Component = () => {
               <ul>
                 <li>任意座標: ${niniZahyouRate}%（${ninni_zahyou}件）</li>
                 <li>公共座標: ${kokyoZahyouRate}%（${kokyo_zahyou}件）</li>
-                <li>特殊な地番: ${special_chiban}件</li>
+                <li>特殊な地番: ${special_chiban}件（数字以外から始まる地番）</li>
                 <li>合計: ${total}件</li>
               </ul>
-              <small>※特殊な地番: 数字以外から始まる地番の集計です。</small>
-              <br>
-              <small>*小数点以下は四捨五入しています。</small>
             </div>`
           )
           .addTo(map);
       })
+
+      map.on('click', (e: any) => {
+
+        if (selectRef && selectRef.current && selectRef.current.value === 'prefecture') {
+          return;
+        }
+
+        const features = map.queryRenderedFeatures(e.point);
+
+        if (!features.length) {
+          return;
+        }
+
+        const cityCode = features[0].properties.N03_007;
+        const cityName = features[0].properties.N03_004;
+        const prefCode = features[0].properties.N03_007.slice(0, 2);
+
+        //@ts-ignore
+        const { ninni_zahyou, kokyo_zahyou, special_chiban, total } = chibanJSON[prefCode][cityCode];
+
+        const niniZahyouRate = calcZahyouRate(ninni_zahyou, total);
+        const kokyoZahyouRate = calcZahyouRate(kokyo_zahyou, total);
+
+        new window.geolonia.Popup({ offset: 25 })
+          .setLngLat(e.lngLat)
+          .setHTML(
+            `<div>
+              <h3>${cityName}</h3>
+              <ul>
+                <li>任意座標: ${niniZahyouRate}%（${ninni_zahyou}件）</li>
+                <li>公共座標: ${kokyoZahyouRate}%（${kokyo_zahyou}件）</li>
+                <li>特殊な地番: ${special_chiban}件（数字以外から始まる地番）</li>
+                <li>合計: ${total}件</li>
+              </ul>
+            </div>`
+          )
+          .addTo(map);
+
+      })
+
     })
   });
 
   return (
     <>
-      <div style={style} ref={mapContainer}/>
+      <div style={style} ref={mapContainer} />
+      <select
+        style={{
+          position: "absolute",
+          zIndex: 2,
+          fontSize: "20px",
+          top: "80px",
+          right: "50px",
+          width: "300px",
+        }}
+        ref={selectRef}>
+        <option value='prefecture'>都道府県</option>
+        <option value='city'>市区町村</option>
+      </select>
       <div className='absolute bottom-10 right-5 block max-w-sm p-3 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700' >
         <div className='text-sm'>任意座標割合</div>
         {
           Object.keys(legendList).map((key) => {
             return (
               <div className='flex items-center' key={key}>
-                <span className='block h-3 w-8 mr-2' style={{backgroundColor: legendList[key].color}}></span>
+                <span className='block h-3 w-8 mr-2' style={{ backgroundColor: legendList[key].color }}></span>
                 {legendList[key].label}
               </div>
             )
