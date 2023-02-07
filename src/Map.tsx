@@ -13,6 +13,29 @@ const style = {
   height: '100vh',
 } as React.CSSProperties;
 
+const legendList: {[key:string]: any} = {
+  // 75~100％
+  all: {
+    label : `75~100%`,
+    color: `#e64919`,
+  },
+  // 50~75％
+  threeQuarter: {
+    label : `50~75%`,
+    color: `#f9a824`,
+  },
+  // 25~50％
+  half: {
+    label : `25~50%`,
+    color: `#ffcc00`,
+  },
+  // 0~25％
+  quarter: {
+    label : `0~25%`,
+    color: `#fad647`,
+  }
+}
+
 const mapStyleJSON = {
   "version": 8,
   "name": "Chiban Zahyou Style",
@@ -69,16 +92,16 @@ const Component = () => {
               "case",
               // 0~25％
               ["<=", niniZahyouRate, 25],
-              `#fad647`,
+              legendList.quarter.color,
               // 25~50％
               ["<=", niniZahyouRate, 50],
-              `#ffcc00`,
+              legendList.half.color,
               // 50~75％
               ["<=", niniZahyouRate, 75],
-              `#f9a824`,
+              legendList.threeQuarter.color,
               // 75~100％
               ["<=", niniZahyouRate, 100],
-              `#e64919`,
+              legendList.all.color,
               // それ以外は、#ffffff を返す
               "#000000"
             ],
@@ -88,7 +111,6 @@ const Component = () => {
         })
       }
 
-      // レイヤーをホバーすると、ポップアップを表示する
       map.on('click', (e:any) => {
         const features = map.queryRenderedFeatures(e.point);
 
@@ -121,14 +143,29 @@ const Component = () => {
           )
           .addTo(map);
       })
-
-
     })
   });
 
   return (
     <>
       <div style={style} ref={mapContainer}/>
+      <div className='absolute bottom-10 right-5 block max-w-sm p-3 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700' >
+        <div className='text-sm'>任意座標割合</div>
+        {
+          Object.keys(legendList).map((key) => {
+            return (
+              <div className='flex items-center' key={key}>
+                <span className='block h-3 w-8 mr-2' style={{backgroundColor: legendList[key].color}}></span>
+                {legendList[key].label}
+              </div>
+            )
+          })
+        }
+      </div>
+      <div className='absolute bottom-0 right-0 text-xs bg-white p-0.5'>
+        <span><a className=' text-blue-600 dark:text-blue-500 hover:underline' href="https://front.geospatial.jp/houmu-chiseki/" target="_blank" rel="noreferrer">「登記所備付データ」（法務省）</a>を加工して作成</span>
+        <span><a className=' text-blue-600 dark:text-blue-500 hover:underline' href="https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-v3_1.html" target="_blank" rel="noreferrer">「国土数値情報（行政区域データ）」（国土交通省）</a>を加工して作成</span>
+      </div>
     </>
   );
 }
