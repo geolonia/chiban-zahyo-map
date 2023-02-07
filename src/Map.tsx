@@ -36,6 +36,26 @@ const legendList: {[key:string]: any} = {
   }
 }
 
+const fillColorExpression = (niniZahyouRate: number) => {
+  return [
+    "case",
+    // 0~25％
+    ["<=", niniZahyouRate, 25],
+    legendList.quarter.color,
+    // 25~50％
+    ["<=", niniZahyouRate, 50],
+    legendList.half.color,
+    // 50~75％
+    ["<=", niniZahyouRate, 75],
+    legendList.threeQuarter.color,
+    // 75~100％
+    ["<=", niniZahyouRate, 100],
+    legendList.all.color,
+    // それ以外は、#ffffff を返す
+    "#000000"
+  ]
+}
+
 const mapStyleJSON = {
   "version": 8,
   "name": "Chiban Zahyou Style",
@@ -62,6 +82,10 @@ const mapStyleJSON = {
   ]
 }
 
+const calcZahyouRate = (zahyou: number, total: number) => {
+  return Math.round(zahyou / total * 100);
+}
+
 const Component = () => {
   const mapContainer = React.useRef(null);
 
@@ -78,9 +102,9 @@ const Component = () => {
       for (const prefCode in chibanJSON) {
         // @ts-ignore
         const value = chibanJSON[prefCode];
-        const niniZahyouRate = Math.round(value.ninni_zahyou / value.total * 100);
-        // const kokyoZahyouRate = Math.round(value.kokyo_zahyou / value.total * 100);
+        const niniZahyouRatePref = calcZahyouRate(value.ninni_zahyou, value.total);
 
+        // 都道府県レイヤーを追加
         map.addLayer({
           "id": `prefectures-${prefCode}`,
           "type": "fill",
@@ -88,27 +112,40 @@ const Component = () => {
           "source-layer": "prefectures",
           "filter": ["==", "code", prefCode],
           "paint": {
-            "fill-color": [
-              "case",
-              // 0~25％
-              ["<=", niniZahyouRate, 25],
-              legendList.quarter.color,
-              // 25~50％
-              ["<=", niniZahyouRate, 50],
-              legendList.half.color,
-              // 50~75％
-              ["<=", niniZahyouRate, 75],
-              legendList.threeQuarter.color,
-              // 75~100％
-              ["<=", niniZahyouRate, 100],
-              legendList.all.color,
-              // それ以外は、#ffffff を返す
-              "#000000"
-            ],
+            "fill-color": fillColorExpression(niniZahyouRatePref),
             "fill-outline-color": "#ffffff",
             "fill-opacity": 0.8
           }
         })
+
+        for (const key in value) {
+
+          const { ninni_zahyou, total } = value[key];
+          const niniZahyouRateCity = calcZahyouRate(ninni_zahyou, total);
+
+          // 数字かどうか判定
+          if (isNaN(Number(key))) {
+            continue;
+          }
+
+          // 市区町村レイヤーを追加
+          map.addLayer({
+            "id": `city-${key}`,
+            "type": "fill",
+            "source": "jp-local-governments",
+            "source-layer": "jp-local-governments",
+            "filter": ["==", "N03_007", key],
+            "paint": {
+              "fill-color": fillColorExpression(niniZahyouRateCity),
+              "fill-outline-color": "#ffffff",
+              "fill-opacity": 0.8
+            },
+            "layout": {
+              "visibility": "none"
+            }
+          })
+          
+        }
       }
 
       map.on('click', (e:any) => {
@@ -143,6 +180,45 @@ const Component = () => {
           )
           .addTo(map);
       })
+
+      map.on('click', (e: any) => {
+
+        const features = map.queryRenderedFeatures(e.point);
+
+        if (!features.length) {
+          return;
+        }
+
+        const cityCode = features[0].properties.N03_007;
+        const cityName = features[0].properties.N03_004;
+        const prefCode = features[0].properties.N03_007.slice(0, 2);
+
+        //@ts-ignore
+        const {ninni_zahyou, kokyo_zahyou, special_chiban, total } = chibanJSON[prefCode][cityCode];
+
+        const niniZahyouRate = calcZahyouRate(ninni_zahyou, total);
+        const kokyoZahyouRate = calcZahyouRate(kokyo_zahyou, total);
+
+        new window.geolonia.Popup({ offset: 25 })
+          .setLngLat(e.lngLat)
+          .setHTML(
+            `<div>
+              <h3>${cityName}</h3>
+              <ul>
+                <li>任意座標: ${niniZahyouRate}%（${ninni_zahyou}件）</li>
+                <li>公共座標: ${kokyoZahyouRate}%（${kokyo_zahyou}件）</li>
+                <li>特殊な地番: ${special_chiban}件</li>
+                <li>合計: ${total}件</li>
+              </ul>
+              <small>※特殊な地番: 数字以外から始まる地番の集計です。</small>
+              <br>
+              <small>*小数点以下は四捨五入しています。</small>
+            </div>`
+          )
+          .addTo(map);
+
+      })
+
     })
   });
 
