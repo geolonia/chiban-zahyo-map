@@ -193,6 +193,11 @@ const Component = () => {
       }
 
       map.on('click', (e: any) => {
+
+        if (selectRef && selectRef.current && selectRef.current.value === 'city') {
+          return;
+        }
+
         const features = map.queryRenderedFeatures(e.point);
 
         if (!features.length) {
@@ -214,18 +219,19 @@ const Component = () => {
               <ul>
                 <li>任意座標: ${niniZahyouRate}%（${ninni_zahyou}件）</li>
                 <li>公共座標: ${kokyoZahyouRate}%（${kokyo_zahyou}件）</li>
-                <li>特殊な地番: ${special_chiban}件</li>
+                <li>特殊な地番: ${special_chiban}件（数字以外から始まる地番）</li>
                 <li>合計: ${total}件</li>
               </ul>
-              <small>※特殊な地番: 数字以外から始まる地番の集計です。</small>
-              <br>
-              <small>*小数点以下は四捨五入しています。</small>
             </div>`
           )
           .addTo(map);
       })
 
       map.on('click', (e: any) => {
+
+        if (selectRef && selectRef.current && selectRef.current.value === 'prefecture') {
+          return;
+        }
 
         const features = map.queryRenderedFeatures(e.point);
 
@@ -251,12 +257,9 @@ const Component = () => {
               <ul>
                 <li>任意座標: ${niniZahyouRate}%（${ninni_zahyou}件）</li>
                 <li>公共座標: ${kokyoZahyouRate}%（${kokyo_zahyou}件）</li>
-                <li>特殊な地番: ${special_chiban}件</li>
+                <li>特殊な地番: ${special_chiban}件（数字以外から始まる地番）</li>
                 <li>合計: ${total}件</li>
               </ul>
-              <small>※特殊な地番: 数字以外から始まる地番の集計です。</small>
-              <br>
-              <small>*小数点以下は四捨五入しています。</small>
             </div>`
           )
           .addTo(map);
@@ -268,11 +271,20 @@ const Component = () => {
 
   return (
     <>
-      <select ref={selectRef}>
+      <div style={style} ref={mapContainer} />
+      <select
+        style={{
+          position: "absolute",
+          zIndex: 2,
+          fontSize: "20px",
+          top: "80px",
+          right: "50px",
+          width: "300px",
+        }}
+        ref={selectRef}>
         <option value='prefecture'>都道府県</option>
         <option value='city'>市区町村</option>
       </select>
-      <div style={style} ref={mapContainer} />
       <div className='absolute bottom-10 right-5 block max-w-sm p-3 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700' >
         <div className='text-sm'>任意座標割合</div>
         {
