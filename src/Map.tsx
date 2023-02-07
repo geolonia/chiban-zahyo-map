@@ -13,25 +13,25 @@ const style = {
   height: '100vh',
 } as React.CSSProperties;
 
-const legendList: {[key:string]: any} = {
+const legendList: { [key: string]: any } = {
   // 75~100％
   all: {
-    label : `75~100%`,
+    label: `75~100%`,
     color: `#e64919`,
   },
   // 50~75％
   threeQuarter: {
-    label : `50~75%`,
+    label: `50~75%`,
     color: `#f9a824`,
   },
   // 25~50％
   half: {
-    label : `25~50%`,
+    label: `25~50%`,
     color: `#ffcc00`,
   },
   // 0~25％
   quarter: {
-    label : `0~25%`,
+    label: `0~25%`,
     color: `#fad647`,
   }
 }
@@ -87,7 +87,8 @@ const calcZahyouRate = (zahyou: number, total: number) => {
 }
 
 const Component = () => {
-  const mapContainer = React.useRef(null);
+  const mapContainer = React.useRef<HTMLDivElement>(null);
+  const selectRef = React.useRef<HTMLSelectElement>(null);
 
   React.useEffect(() => {
     const map = new window.geolonia.Map({
@@ -144,20 +145,63 @@ const Component = () => {
               "visibility": "none"
             }
           })
-          
+
         }
       }
 
-      map.on('click', (e:any) => {
+      // レイヤーの表示切り替え
+      if (selectRef && selectRef.current) {
+        selectRef.current.addEventListener('change', (e: any) => {
+          const value = e.target.value;
+
+          if (value === 'prefecture') {
+
+            for (const prefCode in chibanJSON) {
+
+              map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', 'visible');
+
+              // @ts-ignore
+              for (const key in chibanJSON[prefCode]) {
+
+                if (isNaN(Number(key))) {
+                  continue;
+                }
+
+                map.setLayoutProperty(`city-${key}`, 'visibility', 'none');
+              }
+            }
+
+          } else {
+
+            for (const prefCode in chibanJSON) {
+
+              map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', 'none');
+
+              // @ts-ignore
+              for (const key in chibanJSON[prefCode]) {
+
+                if (isNaN(Number(key))) {
+                  continue;
+                }
+
+                map.setLayoutProperty(`city-${key}`, 'visibility', 'visible');
+              }
+            }
+          }
+
+        })
+      }
+
+      map.on('click', (e: any) => {
         const features = map.queryRenderedFeatures(e.point);
 
         if (!features.length) {
           return;
         }
 
-        const {name, code} = features[0].properties;
+        const { name, code } = features[0].properties;
         // @ts-ignore
-        const {ninni_zahyou, kokyo_zahyou, special_chiban, total } = chibanJSON[code];
+        const { ninni_zahyou, kokyo_zahyou, special_chiban, total } = chibanJSON[code];
 
         const niniZahyouRate = Math.round(ninni_zahyou / total * 100);
         const kokyoZahyouRate = Math.round(kokyo_zahyou / total * 100);
@@ -194,7 +238,7 @@ const Component = () => {
         const prefCode = features[0].properties.N03_007.slice(0, 2);
 
         //@ts-ignore
-        const {ninni_zahyou, kokyo_zahyou, special_chiban, total } = chibanJSON[prefCode][cityCode];
+        const { ninni_zahyou, kokyo_zahyou, special_chiban, total } = chibanJSON[prefCode][cityCode];
 
         const niniZahyouRate = calcZahyouRate(ninni_zahyou, total);
         const kokyoZahyouRate = calcZahyouRate(kokyo_zahyou, total);
@@ -224,14 +268,18 @@ const Component = () => {
 
   return (
     <>
-      <div style={style} ref={mapContainer}/>
+      <select ref={selectRef}>
+        <option value='prefecture'>都道府県</option>
+        <option value='city'>市区町村</option>
+      </select>
+      <div style={style} ref={mapContainer} />
       <div className='absolute bottom-10 right-5 block max-w-sm p-3 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700' >
         <div className='text-sm'>任意座標割合</div>
         {
           Object.keys(legendList).map((key) => {
             return (
               <div className='flex items-center' key={key}>
-                <span className='block h-3 w-8 mr-2' style={{backgroundColor: legendList[key].color}}></span>
+                <span className='block h-3 w-8 mr-2' style={{ backgroundColor: legendList[key].color }}></span>
                 {legendList[key].label}
               </div>
             )
