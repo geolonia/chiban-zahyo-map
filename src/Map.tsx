@@ -9,8 +9,8 @@ declare global {
 
 const style = {
   position: 'absolute',
-  width: '100vw',
-  height: '100vh',
+  width: '100%',
+  height: 'calc(100% - 64px)',
 } as React.CSSProperties;
 
 const legendList: { [key: string]: any } = {
