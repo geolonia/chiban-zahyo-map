@@ -14,52 +14,12 @@ const style = {
 } as React.CSSProperties;
 
 const legendList: { [key: string]: any } = {
-  hundred: {
-    color: '#E60211',
+  max: {
+    color: '#ff0000',
     label: '100%'
   },
-  ninety_ninetynine: {
-    color: '#1b5e20',
-    label: '91~99%'
-  },
-  eighty_ninety: {
-    color: '#2e7d32',
-    label: '81~90%'
-  },
-  seventy_eighty: {
-    color: '#388e3c',
-    label: '71~80%'
-  },
-  sixty_seventy: {
-    color: '#43a047',
-    label: '61~70%'
-  },
-  fifty_sixty: {
-    color: '#4caf50',
-    label: '51~60%'
-  },
-  fourty_fifty: {
-    color: '#66bb6a',
-    label: '41~50%'
-  },
-  thirty_fourty: {
-    color: '#81c784',
-    label: '31~40%'
-  },
-  twenty_thirty: {
-    color: '#a5d6a7',
-    label: '21~30%'
-  },
-  ten_twenty: {
-    color: '#c8e6c9',
-    label: '11~20%'
-  },
-  one_ten: {
-    color: '#e8f5e9',
-    label: '1~10%'
-  },
-  zero: {
-    color: '#000000',
+  min: {
+    color: '#ffffff',
     label: '0%'
   },
 }
@@ -70,13 +30,9 @@ const fillColorExpression = (zaHyoRate: number) => {
     ["linear"],
     zaHyoRate,
     0,
-    '#000000',
-    1,
-    '#ffffff',
-    99,
-    '#009943',
+    legendList.min.color,
     100,
-    '#ff0000'
+    legendList.max.color
   ]
 }
 
@@ -107,7 +63,12 @@ const mapStyleJSON = {
 }
 
 const calcZahyouRate = (zahyou: number, special_chiban: number, total: number) => {
-  return Math.round(zahyou / (total - special_chiban) * 100);
+
+  if (zahyou === 0) {
+    return 0;
+  }
+
+  return Math.round(zahyou / (total - special_chiban) * 1000)/10;
 }
 
 const Component = () => {
@@ -145,13 +106,13 @@ const Component = () => {
 
         for (const key in value) {
 
-          const { kokyo_zahyou, special_chiban, total } = value[key];
-          const kokyoZahyouRateCity = calcZahyouRate(kokyo_zahyou, special_chiban, total);
-
           // 数字かどうか判定
           if (isNaN(Number(key))) {
             continue;
           }
+
+          const { kokyo_zahyou, special_chiban, total } = value[key];
+          const kokyoZahyouRateCity = calcZahyouRate(kokyo_zahyou, special_chiban, total);
 
           // 市区町村レイヤーを追加
           map.addLayer({
@@ -232,8 +193,8 @@ const Component = () => {
         // @ts-ignore
         const { ninni_zahyou, kokyo_zahyou, special_chiban, total } = chibanJSON[code];
 
-        const niniZahyouRate = Math.round(ninni_zahyou / (total - special_chiban) * 100);
-        const kokyoZahyouRate = Math.round(kokyo_zahyou / (total - special_chiban) * 100);
+        const niniZahyouRate = calcZahyouRate(ninni_zahyou, special_chiban, total)
+        const kokyoZahyouRate = calcZahyouRate(kokyo_zahyou, special_chiban, total)
 
         new window.geolonia.Popup({ offset: 25 })
           .setLngLat(e.lngLat)
@@ -244,6 +205,7 @@ const Component = () => {
                 <li>公共座標: ${kokyoZahyouRate}%（${kokyo_zahyou}件）</li>
                 <li>任意座標: ${niniZahyouRate}%（${ninni_zahyou}件）</li>
                 <li>合計: ${total - special_chiban}件<br/>*合計は、全地番${total}件 から 数字以外から始まる地番${special_chiban}件を引いた数</li>
+                <li>割合は小数点第二位で四捨五入しています</li>
               </ul>
             </div>`
           )
@@ -281,6 +243,7 @@ const Component = () => {
                 <li>公共座標: ${kokyoZahyouRate}%（${kokyo_zahyou}件）</li>
                 <li>任意座標: ${niniZahyouRate}%（${ninni_zahyou}件）</li>
                 <li>合計: ${total - special_chiban}件<br/>*合計は、全地番${total}件 から 数字以外から始まる地番${special_chiban}件を引いた数</li>
+                <li>割合は小数点第二位で四捨五入しています</li>
               </ul>
             </div>`
           )
@@ -309,16 +272,18 @@ const Component = () => {
       </select>
       <div className='absolute bottom-10 right-5 block max-w-sm p-3 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700' >
         <div className='text-sm'>公共座標割合</div>
-        {
-          Object.keys(legendList).map((key) => {
-            return (
-              <div className='flex items-center' key={key}>
-                <span className='block h-3 w-8 mr-2' style={{ backgroundColor: legendList[key].color }}></span>
-                {legendList[key].label}
-              </div>
-            )
-          })
-        }
+        <div className='flex items-center'>
+          <span className='block h-40 w-8 mr-2' style={{ background: `linear-gradient(${legendList.max.color}, ${legendList.min.color})`}}></span>
+          <div className='flex flex-col justify-between h-40'>
+            {Object.keys(legendList).map((key) => {
+              return (
+                <div className='flex items-center' key={key}>
+                  <span>{legendList[key].label}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
       </div>
       <div className='absolute bottom-0 right-0 text-xs bg-white p-0.5'>
         <span><a className=' text-blue-600 dark:text-blue-500 hover:underline' href="https://front.geospatial.jp/houmu-chiseki/" target="_blank" rel="noreferrer">「登記所備付データ」（法務省）</a>を加工して作成</span>
