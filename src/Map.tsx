@@ -249,7 +249,7 @@ const Component = () => {
         <option value='prefecture'>都道府県</option>
         <option value='city'>市区町村</option>
       </select>
-      <div className='absolute bottom-10 right-3 block max-w-sm p-3 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700' >
+      <div className='absolute bottom-10 right-3 block pointer-events-none max-w-sm p-3 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700' >
         <div className='text-sm'>公共座標割合</div>
         <div className='flex items-center'>
           <span className='block h-40 w-8 mr-2' style={{ background: `linear-gradient(${legendList.max.color}, ${legendList.min.color})`}}></span>
