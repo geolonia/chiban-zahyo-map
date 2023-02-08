@@ -10,7 +10,7 @@ export default function Header() {
             <div className="relative flex h-16 items-center justify-between">
               <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
                 <div className="flex flex-shrink-0 items-center text-white text-xl font-bold">
-                  登記所備付地図データ 任意座標比率マップ
+                  登記所備付地図データ 公共座標整理状況マップ
                 </div>
               </div>
             </div>
