@@ -14,45 +14,69 @@ const style = {
 } as React.CSSProperties;
 
 const legendList: { [key: string]: any } = {
-  // 75~100％
-  all: {
-    label: `75~100%`,
-    color: `#e64919`,
+  hundred: {
+    color: '#E60211',
+    label: '100%'
   },
-  // 50~75％
-  threeQuarter: {
-    label: `50~75%`,
-    color: `#f9a824`,
+  ninety_ninetynine: {
+    color: '#1b5e20',
+    label: '91~99%'
   },
-  // 25~50％
-  half: {
-    label: `25~50%`,
-    color: `#ffcc00`,
+  eighty_ninety: {
+    color: '#2e7d32',
+    label: '81~90%'
   },
-  // 0~25％
-  quarter: {
-    label: `0~25%`,
-    color: `#fad647`,
-  }
+  seventy_eighty: {
+    color: '#388e3c',
+    label: '71~80%'
+  },
+  sixty_seventy: {
+    color: '#43a047',
+    label: '61~70%'
+  },
+  fifty_sixty: {
+    color: '#4caf50',
+    label: '51~60%'
+  },
+  fourty_fifty: {
+    color: '#66bb6a',
+    label: '41~50%'
+  },
+  thirty_fourty: {
+    color: '#81c784',
+    label: '31~40%'
+  },
+  twenty_thirty: {
+    color: '#a5d6a7',
+    label: '21~30%'
+  },
+  ten_twenty: {
+    color: '#c8e6c9',
+    label: '11~20%'
+  },
+  one_ten: {
+    color: '#e8f5e9',
+    label: '1~10%'
+  },
+  zero: {
+    color: '#000000',
+    label: '0%'
+  },
 }
 
-const fillColorExpression = (niniZahyouRate: number) => {
+const fillColorExpression = (zaHyoRate: number) => {
   return [
-    "case",
-    // 0~25％
-    ["<=", niniZahyouRate, 25],
-    legendList.quarter.color,
-    // 25~50％
-    ["<=", niniZahyouRate, 50],
-    legendList.half.color,
-    // 50~75％
-    ["<=", niniZahyouRate, 75],
-    legendList.threeQuarter.color,
-    // 75~100％
-    ["<=", niniZahyouRate, 100],
-    legendList.all.color,
-    // それ以外は、#ffffff を返す
-    "#000000"
+    "interpolate",
+    ["linear"],
+    zaHyoRate,
+    0,
+    '#000000',
+    1,
+    '#ffffff',
+    99,
+    '#009943',
+    100,
+    '#ff0000'
   ]
 }
 
@@ -82,8 +106,8 @@ const mapStyleJSON = {
   ]
 }
 
-const calcZahyouRate = (zahyou: number, total: number) => {
-  return Math.round(zahyou / total * 100);
+const calcZahyouRate = (zahyou: number, special_chiban: number, total: number) => {
+  return Math.round(zahyou / (total - special_chiban) * 100);
 }
 
 const Component = () => {
@@ -103,7 +127,7 @@ const Component = () => {
       for (const prefCode in chibanJSON) {
         // @ts-ignore
         const value = chibanJSON[prefCode];
-        const niniZahyouRatePref = calcZahyouRate(value.ninni_zahyou, value.total);
+        const kokyoZahyouRatePref = calcZahyouRate(value.kokyo_zahyou, value.special_chiban, value.total);
 
         // 都道府県レイヤーを追加
         map.addLayer({
@@ -113,16 +137,16 @@ const Component = () => {
           "source-layer": "prefectures",
           "filter": ["==", "code", prefCode],
           "paint": {
-            "fill-color": fillColorExpression(niniZahyouRatePref),
-            "fill-outline-color": "#ffffff",
+            "fill-color": fillColorExpression(kokyoZahyouRatePref),
+            "fill-outline-color": "#000000",
             "fill-opacity": 0.8
           }
         })
 
         for (const key in value) {
 
-          const { ninni_zahyou, total } = value[key];
-          const niniZahyouRateCity = calcZahyouRate(ninni_zahyou, total);
+          const { kokyo_zahyou, special_chiban, total } = value[key];
+          const kokyoZahyouRateCity = calcZahyouRate(kokyo_zahyou, special_chiban, total);
 
           // 数字かどうか判定
           if (isNaN(Number(key))) {
@@ -137,8 +161,8 @@ const Component = () => {
             "source-layer": "jp-local-governments",
             "filter": ["==", "N03_007", key],
             "paint": {
-              "fill-color": fillColorExpression(niniZahyouRateCity),
-              "fill-outline-color": "#ffffff",
+              "fill-color": fillColorExpression(kokyoZahyouRateCity),
+              "fill-outline-color": "#000000",
               "fill-opacity": 0.8
             },
             "layout": {
@@ -208,8 +232,8 @@ const Component = () => {
         // @ts-ignore
         const { ninni_zahyou, kokyo_zahyou, special_chiban, total } = chibanJSON[code];
 
-        const niniZahyouRate = Math.round(ninni_zahyou / total * 100);
-        const kokyoZahyouRate = Math.round(kokyo_zahyou / total * 100);
+        const niniZahyouRate = Math.round(ninni_zahyou / (total - special_chiban) * 100);
+        const kokyoZahyouRate = Math.round(kokyo_zahyou / (total - special_chiban) * 100);
 
         new window.geolonia.Popup({ offset: 25 })
           .setLngLat(e.lngLat)
@@ -217,10 +241,9 @@ const Component = () => {
             `<div>
               <h3>${name}</h3>
               <ul>
-                <li>任意座標: ${niniZahyouRate}%（${ninni_zahyou}件）</li>
                 <li>公共座標: ${kokyoZahyouRate}%（${kokyo_zahyou}件）</li>
-                <li>特殊な地番: ${special_chiban}件（数字以外から始まる地番）</li>
-                <li>合計: ${total}件</li>
+                <li>任意座標: ${niniZahyouRate}%（${ninni_zahyou}件）</li>
+                <li>合計: ${total - special_chiban}件<br/>*合計は、全地番${total}件 から 数字以外から始まる地番${special_chiban}件を引いた数</li>
               </ul>
             </div>`
           )
@@ -246,8 +269,8 @@ const Component = () => {
         //@ts-ignore
         const { ninni_zahyou, kokyo_zahyou, special_chiban, total } = chibanJSON[prefCode][cityCode];
 
-        const niniZahyouRate = calcZahyouRate(ninni_zahyou, total);
-        const kokyoZahyouRate = calcZahyouRate(kokyo_zahyou, total);
+        const niniZahyouRate = calcZahyouRate(ninni_zahyou, special_chiban, total);
+        const kokyoZahyouRate = calcZahyouRate(kokyo_zahyou, special_chiban, total);
 
         new window.geolonia.Popup({ offset: 25 })
           .setLngLat(e.lngLat)
@@ -255,10 +278,9 @@ const Component = () => {
             `<div>
               <h3>${cityName}</h3>
               <ul>
-                <li>任意座標: ${niniZahyouRate}%（${ninni_zahyou}件）</li>
                 <li>公共座標: ${kokyoZahyouRate}%（${kokyo_zahyou}件）</li>
-                <li>特殊な地番: ${special_chiban}件（数字以外から始まる地番）</li>
-                <li>合計: ${total}件</li>
+                <li>任意座標: ${niniZahyouRate}%（${ninni_zahyou}件）</li>
+                <li>合計: ${total - special_chiban}件<br/>*合計は、全地番${total}件 から 数字以外から始まる地番${special_chiban}件を引いた数</li>
               </ul>
             </div>`
           )
@@ -286,7 +308,7 @@ const Component = () => {
         <option value='city'>市区町村</option>
       </select>
       <div className='absolute bottom-10 right-5 block max-w-sm p-3 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700' >
-        <div className='text-sm'>任意座標割合</div>
+        <div className='text-sm'>公共座標割合</div>
         {
           Object.keys(legendList).map((key) => {
             return (
