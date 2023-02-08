@@ -36,32 +36,6 @@ const fillColorExpression = (zaHyoRate: number) => {
   ]
 }
 
-const mapStyleJSON = {
-  "version": 8,
-  "name": "Chiban Zahyou Style",
-  "sources": {
-    "jp-pref": {
-      "type": "vector",
-      "url": "https://cdn.geolonia.com/tiles/japanese-prefectures.json"
-    },
-    "jp-local-governments": {
-      "type": "vector",
-      "url": "https://tileserver.geolonia.com/jp-local-governments/tiles.json?key=YOUR-API-KEY"
-    }
-  },
-  "sprite": "https://geoloniamaps.github.io/basic/basic",
-  "glyphs": "https://glyphs.geolonia.com/{fontstack}/{range}.pbf",
-  "layers": [
-    {
-      "id": "background",
-      "type": "background",
-      "paint": {
-        "background-color": "#C8C8C8"
-      }
-    }
-  ]
-}
-
 const calcZahyouRate = (zahyou: number, special_chiban: number, total: number) => {
 
   if (zahyou === 0) {
@@ -80,10 +54,20 @@ const Component = () => {
       container: mapContainer.current,
       zoom: 5,
       center: [140.14, 37.26],
-      style: mapStyleJSON,
+      style: 'geolonia/gsi',
     })
 
     map.on('load', () => {
+
+      map.addSource('jp-pref', {
+        type: 'vector',
+        url: 'https://cdn.geolonia.com/tiles/japanese-prefectures.json'
+        });
+
+      map.addSource('jp-local-governments', {
+        type: 'vector',
+        url: "https://tileserver.geolonia.com/jp-local-governments/tiles.json?key=YOUR-API-KEY",
+      });
 
       for (const prefCode in chibanJSON) {
         // @ts-ignore
@@ -99,8 +83,7 @@ const Component = () => {
           "filter": ["==", "code", prefCode],
           "paint": {
             "fill-color": fillColorExpression(kokyoZahyouRatePref),
-            "fill-outline-color": "#000000",
-            "fill-opacity": 0.8
+            "fill-outline-color": "#000000"
           }
         })
 
@@ -123,8 +106,7 @@ const Component = () => {
             "filter": ["==", "N03_007", key],
             "paint": {
               "fill-color": fillColorExpression(kokyoZahyouRateCity),
-              "fill-outline-color": "#000000",
-              "fill-opacity": 0.8
+              "fill-outline-color": "#000000"
             },
             "layout": {
               "visibility": "none"
