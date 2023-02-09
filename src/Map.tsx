@@ -259,9 +259,10 @@ const Component = () => {
 
   return (
     <>
+      <div className='absolute top-[64px] left-0 z-10 bg-white border border-gray-200 py-0.5 px-2 text-sm'>総筆数: 245,166,595件</div>
       <div style={style} ref={mapContainer} />
       <select
-        className='absolute top-[75px] right-[50px] z-10 text-[20px] w-[300px] p-0.5 border border-gray-200 rounded-lg shadow hover:bg-gray-100'
+        className='absolute top-[75px] right-[50px] z-10 text-[20px] w-[130px] sm:w-[300px] p-0.5 border border-gray-200 rounded-lg shadow hover:bg-gray-100'
         ref={selectRef}>
         <option value='prefecture'>都道府県</option>
         <option value='city'>市区町村</option>
