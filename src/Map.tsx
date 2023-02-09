@@ -201,11 +201,20 @@ const Component = () => {
           .setHTML(
             `<div>
               <h3>${name}</h3>
-              <ul>
-                <li>公共座標: ${kokyoZahyouRate}%（${formatNumber(kokyo_zahyou)}件）</li>
-                <li>任意座標: ${niniZahyouRate}%（${formatNumber(ninni_zahyou)}件）</li>
-                <li>合計: ${formatNumber(total - special_chiban)}件</li>
-              </ul>
+              <table>
+                <tr>
+                  <th>公共座標</th>
+                  <td>${kokyoZahyouRate}%（${formatNumber(kokyo_zahyou)}件）</td>
+                </tr>
+                <tr>
+                  <th>任意座標</th>
+                  <td>${niniZahyouRate}%（${formatNumber(ninni_zahyou)}件）</td>
+                </tr>
+                <tr>
+                  <th>合計</th>
+                  <td>${formatNumber(total - special_chiban)}件</td>
+                </tr>
+              </table>
             </div>`
           )
           .addTo(map);
