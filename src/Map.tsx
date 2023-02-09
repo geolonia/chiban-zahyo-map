@@ -58,7 +58,7 @@ const Component = () => {
       container: mapContainer.current,
       zoom: 5,
       center: [140.14, 37.26],
-      style: 'geolonia/gsi',
+      style: './style.json',
     })
 
     map.on('load', () => {
@@ -93,7 +93,9 @@ const Component = () => {
             "fill-color": fillColorExpression(kokyoZahyouRatePref),
             "fill-outline-color": "#000000"
           }
-        })
+        },
+          'oc-label-town'
+        )
 
         for (const key in value) {
 
@@ -119,7 +121,9 @@ const Component = () => {
             "layout": {
               "visibility": "none"
             }
-          })
+          },
+            'oc-label-town'
+          )
 
         }
       }
