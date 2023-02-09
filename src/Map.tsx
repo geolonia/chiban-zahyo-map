@@ -200,19 +200,19 @@ const Component = () => {
           .setLngLat(e.lngLat)
           .setHTML(
             `<div>
-              <h3>${name}</h3>
-              <table>
-                <tr>
-                  <th>公共座標</th>
-                  <td>${kokyoZahyouRate}%（${formatNumber(kokyo_zahyou)}件）</td>
+              <h3 class="text-sm font-bold ">${name}</h3>
+              <table class="border border-gray-300">
+                <tr class="border border-gray-300">
+                  <th class="border border-r-gray-300 py-1 px-2">公共座標</th>
+                  <td class="py-1 px-2">${kokyoZahyouRate}%（${formatNumber(kokyo_zahyou)}件）</td>
                 </tr>
-                <tr>
-                  <th>任意座標</th>
-                  <td>${niniZahyouRate}%（${formatNumber(ninni_zahyou)}件）</td>
+                <tr class="border border-gray-300">
+                  <th class="border border-r-gray-300 py-1 px-2">任意座標</th>
+                  <td class="py-1 px-2">${niniZahyouRate}%（${formatNumber(ninni_zahyou)}件）</td>
                 </tr>
-                <tr>
-                  <th>合計</th>
-                  <td>${formatNumber(total - special_chiban)}件</td>
+                <tr class="border border-gray-300">
+                  <th class="border border-r-gray-300 py-1 px-2">合計</th>
+                  <td class="py-1 px-2">${formatNumber(total - special_chiban)}件</td>
                 </tr>
               </table>
             </div>`
