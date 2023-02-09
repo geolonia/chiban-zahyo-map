@@ -24,6 +24,23 @@ const legendList: { [key: string]: any } = {
   },
 }
 
+const displayNoneLayersPref = [
+  "place-city-capital",
+  "place-city-rank2",
+  "place-city-rank3",
+  "place-city-rank4",
+  "place-city-rank5",
+  "place-city-rank6",
+  "place-city-rank7",
+  "place-city-rank8",
+  "place-city-rank9",
+  "place-city-rank10",
+  "place-town",
+  "place-village",
+  "oc-label-town-ja",
+  "oc-label-town",
+]
+
 const fillColorExpression = (zaHyoRate: number) => {
   return [
     "interpolate",
@@ -139,6 +156,10 @@ const Component = () => {
 
               map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', 'visible');
 
+              displayNoneLayersPref.forEach((layer) => {
+                map.setLayoutProperty(layer, 'visibility', 'none');
+              })
+
               // @ts-ignore
               for (const key in chibanJSON[prefCode]) {
 
@@ -155,6 +176,10 @@ const Component = () => {
             for (const prefCode in chibanJSON) {
 
               map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', 'none');
+
+              displayNoneLayersPref.forEach((layer) => {
+                map.setLayoutProperty(layer, 'visibility', 'visible');
+              })
 
               // @ts-ignore
               for (const key in chibanJSON[prefCode]) {
