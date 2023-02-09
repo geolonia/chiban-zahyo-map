@@ -1,46 +1,16 @@
-# Getting Started with Create React App
+# 登記所備付地図データ 公共座標整理状況マップ
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+https://geolonia.github.io/chiban-zahyo-map/
 
-## Available Scripts
+法務省の[登記所備付地図データ](https://front.geospatial.jp/houmu-chiseki/)の公共座標整理状況を、都道府県、市区町村別に可視化した地図です
 
-In the project directory, you can run:
+<img width="1201" alt="スクリーンショット 2023-02-09 14 40 37" src="https://user-images.githubusercontent.com/8760841/217733430-d8693ce8-aa06-440b-96e3-9406bddf71de.png">
 
-### `npm start`
+データ集計に使用したスクリプトは以下のリポジトリをご覧下さい。  
+https://github.com/geolonia/moj-counts
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## 使用データ
 
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+- [「登記所備付データ」（法務省）](https://front.geospatial.jp/houmu-chiseki/)を加工して作成（数値以外で始まる地番住所は除外しています）
+- [「国土数値情報（行政区域データ）」（国土交通省）](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-v3_1.html)を加工して作成
