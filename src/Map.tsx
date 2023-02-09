@@ -184,6 +184,12 @@ const Component = () => {
         }
 
         const { name, code } = features[0].properties;
+
+        // データレイヤー以外をクリックした場合は処理を終了
+        if (!code) {
+          return;
+        }
+
         // @ts-ignore
         const { ninni_zahyou, kokyo_zahyou, special_chiban, total } = chibanJSON[code];
 
@@ -214,6 +220,11 @@ const Component = () => {
         const features = map.queryRenderedFeatures(e.point);
 
         if (!features.length) {
+          return;
+        }
+
+        // データレイヤー以外をクリックした場合は処理を終了
+        if (!features[0].properties.N03_007) {
           return;
         }
 
