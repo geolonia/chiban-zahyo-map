@@ -45,6 +45,10 @@ const calcZahyouRate = (zahyou: number, special_chiban: number, total: number) =
   return Math.round(zahyou / (total - special_chiban) * 1000)/10;
 }
 
+const formatNumber = (num: number) => {
+  return num.toLocaleString()
+}
+
 const Component = () => {
   const mapContainer = React.useRef<HTMLDivElement>(null);
   const selectRef = React.useRef<HTMLSelectElement>(null);
@@ -188,10 +192,9 @@ const Component = () => {
             `<div>
               <h3>${name}</h3>
               <ul>
-                <li>公共座標: ${kokyoZahyouRate}%（${kokyo_zahyou}件）</li>
-                <li>任意座標: ${niniZahyouRate}%（${ninni_zahyou}件）</li>
-                <li>合計: ${total - special_chiban}件<br/>*合計は、全地番${total}件 から 数字以外から始まる地番${special_chiban}件を引いた数</li>
-                <li>割合は小数点第二位で四捨五入しています</li>
+                <li>公共座標: ${kokyoZahyouRate}%（${formatNumber(kokyo_zahyou)}件）</li>
+                <li>任意座標: ${niniZahyouRate}%（${formatNumber(ninni_zahyou)}件）</li>
+                <li>合計: ${formatNumber(total - special_chiban)}件</li>
               </ul>
             </div>`
           )
@@ -226,10 +229,9 @@ const Component = () => {
             `<div>
               <h3>${cityName}</h3>
               <ul>
-                <li>公共座標: ${kokyoZahyouRate}%（${kokyo_zahyou}件）</li>
-                <li>任意座標: ${niniZahyouRate}%（${ninni_zahyou}件）</li>
-                <li>合計: ${total - special_chiban}件<br/>*合計は、全地番${total}件 から 数字以外から始まる地番${special_chiban}件を引いた数</li>
-                <li>割合は小数点第二位で四捨五入しています</li>
+                <li>公共座標: ${kokyoZahyouRate}%（${formatNumber(kokyo_zahyou)}件）</li>
+                <li>任意座標: ${niniZahyouRate}%（${formatNumber(ninni_zahyou)}件）</li>
+                <li>合計: ${formatNumber(total - special_chiban)}件</li>
               </ul>
             </div>`
           )
@@ -265,7 +267,7 @@ const Component = () => {
         </div>
       </div>
       <div className='absolute bottom-0 py-px px-9 text-[8px] text-left  bg-white sm:max-w-lg lg:max-w-none lg:right-[270px] lg:text-[12px] lg:px-2'>
-        <span><a className=' text-blue-600 hover:underline' href="https://front.geospatial.jp/houmu-chiseki/" target="_blank" rel="noreferrer">「登記所備付データ」（法務省）</a>を加工して作成</span>
+        <span><a className=' text-blue-600 hover:underline' href="https://front.geospatial.jp/houmu-chiseki/" target="_blank" rel="noreferrer">「登記所備付データ」（法務省）</a>を加工して作成（数値以外で始まる地番住所は除外して集計しています）</span>
         <span><a className='text-blue-600 hover:underline' href="https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-v3_1.html" target="_blank" rel="noreferrer">「国土数値情報（行政区域データ）」（国土交通省）</a>を加工して作成</span>
       </div>
     </>
