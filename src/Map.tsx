@@ -160,43 +160,18 @@ const Component = () => {
       // レイヤーの表示切り替え
       if (selectRef && selectRef.current) {
         selectRef.current.addEventListener('change', (e: any) => {
-          const value = e.target.value;
 
-          if (value === 'prefecture') {
+          const showPrefectures = e.target.value === 'prefecture';
 
-            for (const prefCode in chibanJSON) {
-
-              map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', 'visible');
-
-              // @ts-ignore
-              for (const key in chibanJSON[prefCode]) {
-
-                if (isNaN(Number(key))) {
-                  continue;
-                }
-
-                map.setLayoutProperty(`city-${key}`, 'visibility', 'none');
-              }
-            }
-
-          } else {
-
-            for (const prefCode in chibanJSON) {
-
-              map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', 'none');
-
-              // @ts-ignore
-              for (const key in chibanJSON[prefCode]) {
-
-                if (isNaN(Number(key))) {
-                  continue;
-                }
-
-                map.setLayoutProperty(`city-${key}`, 'visibility', 'visible');
+          for (const prefCode in chibanJSON) {
+            map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', showPrefectures ? 'visible' : 'none');
+            // @ts-ignore
+            for (const key in chibanJSON[prefCode]) {
+              if (!isNaN(Number(key))) {
+                map.setLayoutProperty(`city-${key}`, 'visibility', showPrefectures ? 'none' : 'visible');
               }
             }
           }
-
         })
       }
 
@@ -208,13 +183,7 @@ const Component = () => {
           return;
         }
 
-        let name;
-        let kokyoZahyouRate;
-        let niniZahyouRate;
-        let kokyo_zahyou;
-        let ninni_zahyou;
-        let total;
-        let special_chiban;
+        let name, kokyoZahyouRate, niniZahyouRate, kokyo_zahyou, ninni_zahyou, total, special_chiban;
 
         if (selectRef.current.value === 'prefecture') {
 
@@ -237,7 +206,7 @@ const Component = () => {
           niniZahyouRate = calcZahyouRate(ninni_zahyou, special_chiban, total)
           kokyoZahyouRate = calcZahyouRate(kokyo_zahyou, special_chiban, total)
           
-        } else if (selectRef.current.value === 'city') {
+        } else {
 
           // データレイヤー以外をクリックした場合は処理を終了
           if (!features[0].properties.N03_007) {
@@ -261,13 +230,6 @@ const Component = () => {
           kokyoZahyouRate = calcZahyouRate(kokyo_zahyou, special_chiban, total);
         }
 
-        if (
-          kokyoZahyouRate === undefined ||
-          niniZahyouRate === undefined
-        ) {
-          return;
-        }
-
         const popup = popupContent(
           name,
           kokyoZahyouRate,
@@ -283,6 +245,7 @@ const Component = () => {
           .setHTML(popup)
           .addTo(map);
       })
+
     })
   });
 
