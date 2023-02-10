@@ -63,15 +63,15 @@ const popupContent = (
   <h3 class="text-sm font-bold mb-1">${name}</h3>
   <table class="border border-gray-300">
     <tr class="border border-gray-300">
-      <th class="border border-r-gray-300 py-1 px-2">公共座標</th>
+      <th class="border border-r-gray-300 font-normal py-1 px-2">公共座標</th>
       <td class="py-1 px-2">${kokyoZahyouRate}%（${formatNumber(kokyo_zahyou)}件）</td>
     </tr>
     <tr class="border border-gray-300">
-      <th class="border border-r-gray-300 py-1 px-2">任意座標</th>
+      <th class="border border-r-gray-300 font-normal py-1 px-2">任意座標</th>
       <td class="py-1 px-2">${niniZahyouRate}%（${formatNumber(ninni_zahyou)}件）</td>
     </tr>
     <tr class="border border-gray-300">
-      <th class="border border-r-gray-300 py-1 px-2">合計</th>
+      <th class="border border-r-gray-300 font-normal py-1 px-2">合計</th>
       <td class="py-1 px-2">${formatNumber(total - special_chiban)}件</td>
     </tr>
   </table>
@@ -90,7 +90,7 @@ const Component = () => {
       style: './style.json',
     })
 
-    map.on('load', () => {
+    map.once('load', () => {
 
       if (!map.getSource('jp-pref')) {
         map.addSource('jp-pref', {
@@ -111,20 +111,22 @@ const Component = () => {
         const value = chibanJSON[prefCode];
         const kokyoZahyouRatePref = calcZahyouRate(value.kokyo_zahyou, value.special_chiban, value.total);
 
-        // 都道府県レイヤーを追加
-        map.addLayer({
-          "id": `prefectures-${prefCode}`,
-          "type": "fill",
-          "source": "jp-pref",
-          "source-layer": "prefectures",
-          "filter": ["==", "code", prefCode],
-          "paint": {
-            "fill-color": fillColorExpression(kokyoZahyouRatePref),
-            "fill-outline-color": "#000000"
-          }
-        },
-          'oc-label-town'
-        )
+        if (!map.getLayer(`prefectures-${prefCode}`)) {
+          // 都道府県レイヤーを追加
+          map.addLayer({
+            "id": `prefectures-${prefCode}`,
+            "type": "fill",
+            "source": "jp-pref",
+            "source-layer": "prefectures",
+            "filter": ["==", "code", prefCode],
+            "paint": {
+              "fill-color": fillColorExpression(kokyoZahyouRatePref),
+              "fill-outline-color": "#000000"
+            }
+          },
+            'oc-label-town'
+          )
+        }
 
         for (const key in value) {
 
@@ -136,23 +138,25 @@ const Component = () => {
           const { kokyo_zahyou, special_chiban, total } = value[key];
           const kokyoZahyouRateCity = calcZahyouRate(kokyo_zahyou, special_chiban, total);
 
-          // 市区町村レイヤーを追加
-          map.addLayer({
-            "id": `city-${key}`,
-            "type": "fill",
-            "source": "jp-local-governments",
-            "source-layer": "jp-local-governments",
-            "filter": ["==", "N03_007", key],
-            "paint": {
-              "fill-color": fillColorExpression(kokyoZahyouRateCity),
-              "fill-outline-color": "#000000"
+          if (!map.getLayer(`city-${key}`)) {
+            // 市区町村レイヤーを追加
+            map.addLayer({
+              "id": `city-${key}`,
+              "type": "fill",
+              "source": "jp-local-governments",
+              "source-layer": "jp-local-governments",
+              "filter": ["==", "N03_007", key],
+              "paint": {
+                "fill-color": fillColorExpression(kokyoZahyouRateCity),
+                "fill-outline-color": "#000000"
+              },
+              "layout": {
+                "visibility": "none"
+              }
             },
-            "layout": {
-              "visibility": "none"
-            }
-          },
-            'oc-label-town'
-          )
+              'oc-label-town'
+            )
+          }
 
         }
       }
@@ -247,7 +251,7 @@ const Component = () => {
       })
 
     })
-  });
+  },[]);
 
   return (
     <>
