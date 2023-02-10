@@ -202,28 +202,71 @@ const Component = () => {
 
       map.on('click', (e: any) => {
 
-        if (selectRef && selectRef.current && selectRef.current.value === 'city') {
-          return;
-        }
-
         const features = map.queryRenderedFeatures(e.point);
 
-        if (!features.length) {
+        if (!features.length || !selectRef || !selectRef.current) {
           return;
         }
 
-        const { name, code } = features[0].properties;
+        let name;
+        let kokyoZahyouRate;
+        let niniZahyouRate;
+        let kokyo_zahyou;
+        let ninni_zahyou;
+        let total;
+        let special_chiban;
 
-        // データレイヤー以外をクリックした場合は処理を終了
-        if (!code) {
-          return;
+        if (selectRef.current.value === 'prefecture') {
+
+          name = features[0].properties.name;
+          const code = features[0].properties.code;
+
+          // データレイヤー以外をクリックした場合は処理を終了
+          if (!code) {
+            return;
+          }
+
+          // @ts-ignore
+          ninni_zahyou = chibanJSON[code].ninni_zahyou;
+          // @ts-ignore
+          kokyo_zahyou = chibanJSON[code].kokyo_zahyou;
+          // @ts-ignore
+          special_chiban = chibanJSON[code].special_chiban;
+          // @ts-ignore
+          total = chibanJSON[code].total;
+          niniZahyouRate = calcZahyouRate(ninni_zahyou, special_chiban, total)
+          kokyoZahyouRate = calcZahyouRate(kokyo_zahyou, special_chiban, total)
+          
+        } else if (selectRef.current.value === 'city') {
+
+          // データレイヤー以外をクリックした場合は処理を終了
+          if (!features[0].properties.N03_007) {
+            return;
+          }
+
+          name = features[0].properties.N03_004;
+          const cityCode = features[0].properties.N03_007;
+          const prefCode = features[0].properties.N03_007.slice(0, 2);
+
+          // @ts-ignore
+          ninni_zahyou = chibanJSON[prefCode][cityCode].ninni_zahyou;
+          // @ts-ignore
+          kokyo_zahyou = chibanJSON[prefCode][cityCode].kokyo_zahyou;
+          // @ts-ignore
+          special_chiban = chibanJSON[prefCode][cityCode].special_chiban;
+          // @ts-ignore
+          total = chibanJSON[prefCode][cityCode].total;
+
+          niniZahyouRate = calcZahyouRate(ninni_zahyou, special_chiban, total);
+          kokyoZahyouRate = calcZahyouRate(kokyo_zahyou, special_chiban, total);
         }
 
-        // @ts-ignore
-        const { ninni_zahyou, kokyo_zahyou, special_chiban, total } = chibanJSON[code];
-
-        const niniZahyouRate = calcZahyouRate(ninni_zahyou, special_chiban, total)
-        const kokyoZahyouRate = calcZahyouRate(kokyo_zahyou, special_chiban, total)
+        if (
+          kokyoZahyouRate === undefined ||
+          niniZahyouRate === undefined
+        ) {
+          return;
+        }
 
         const popup = popupContent(
           name,
@@ -240,51 +283,6 @@ const Component = () => {
           .setHTML(popup)
           .addTo(map);
       })
-
-      map.on('click', (e: any) => {
-
-        if (selectRef && selectRef.current && selectRef.current.value === 'prefecture') {
-          return;
-        }
-
-        const features = map.queryRenderedFeatures(e.point);
-
-        if (!features.length) {
-          return;
-        }
-
-        // データレイヤー以外をクリックした場合は処理を終了
-        if (!features[0].properties.N03_007) {
-          return;
-        }
-
-        const name = features[0].properties.N03_004;
-        const cityCode = features[0].properties.N03_007;
-        const prefCode = features[0].properties.N03_007.slice(0, 2);
-
-        //@ts-ignore
-        const { ninni_zahyou, kokyo_zahyou, special_chiban, total } = chibanJSON[prefCode][cityCode];
-
-        const niniZahyouRate = calcZahyouRate(ninni_zahyou, special_chiban, total);
-        const kokyoZahyouRate = calcZahyouRate(kokyo_zahyou, special_chiban, total);
-
-        const popup = popupContent(
-          name,
-          kokyoZahyouRate,
-          niniZahyouRate,
-          kokyo_zahyou,
-          ninni_zahyou,
-          total,
-          special_chiban
-        )
-
-        new window.geolonia.Popup({ offset: 25 })
-          .setLngLat(e.lngLat)
-          .setHTML(popup)
-          .addTo(map);
-
-      })
-
     })
   });
 
