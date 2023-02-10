@@ -49,6 +49,35 @@ const formatNumber = (num: number) => {
   return num.toLocaleString()
 }
 
+const popupContent = (
+  name:string,
+  kokyoZahyouRate:number,
+  niniZahyouRate:number,
+  kokyo_zahyou:number,
+  ninni_zahyou:number,
+  total:number,
+  special_chiban:number
+  ) => {
+
+  return `<div>
+  <h3 class="text-sm font-bold mb-1">${name}</h3>
+  <table class="border border-gray-300">
+    <tr class="border border-gray-300">
+      <th class="border border-r-gray-300 py-1 px-2">公共座標</th>
+      <td class="py-1 px-2">${kokyoZahyouRate}%（${formatNumber(kokyo_zahyou)}件）</td>
+    </tr>
+    <tr class="border border-gray-300">
+      <th class="border border-r-gray-300 py-1 px-2">任意座標</th>
+      <td class="py-1 px-2">${niniZahyouRate}%（${formatNumber(ninni_zahyou)}件）</td>
+    </tr>
+    <tr class="border border-gray-300">
+      <th class="border border-r-gray-300 py-1 px-2">合計</th>
+      <td class="py-1 px-2">${formatNumber(total - special_chiban)}件</td>
+    </tr>
+  </table>
+</div>`
+}
+
 const Component = () => {
   const mapContainer = React.useRef<HTMLDivElement>(null);
   const selectRef = React.useRef<HTMLSelectElement>(null);
@@ -196,27 +225,19 @@ const Component = () => {
         const niniZahyouRate = calcZahyouRate(ninni_zahyou, special_chiban, total)
         const kokyoZahyouRate = calcZahyouRate(kokyo_zahyou, special_chiban, total)
 
+        const popup = popupContent(
+          name,
+          kokyoZahyouRate,
+          niniZahyouRate,
+          kokyo_zahyou,
+          ninni_zahyou,
+          total,
+          special_chiban
+        )
+
         new window.geolonia.Popup({ offset: 25 })
           .setLngLat(e.lngLat)
-          .setHTML(
-            `<div>
-              <h3 class="text-sm font-bold ">${name}</h3>
-              <table class="border border-gray-300">
-                <tr class="border border-gray-300">
-                  <th class="border border-r-gray-300 py-1 px-2">公共座標</th>
-                  <td class="py-1 px-2">${kokyoZahyouRate}%（${formatNumber(kokyo_zahyou)}件）</td>
-                </tr>
-                <tr class="border border-gray-300">
-                  <th class="border border-r-gray-300 py-1 px-2">任意座標</th>
-                  <td class="py-1 px-2">${niniZahyouRate}%（${formatNumber(ninni_zahyou)}件）</td>
-                </tr>
-                <tr class="border border-gray-300">
-                  <th class="border border-r-gray-300 py-1 px-2">合計</th>
-                  <td class="py-1 px-2">${formatNumber(total - special_chiban)}件</td>
-                </tr>
-              </table>
-            </div>`
-          )
+          .setHTML(popup)
           .addTo(map);
       })
 
@@ -237,8 +258,8 @@ const Component = () => {
           return;
         }
 
+        const name = features[0].properties.N03_004;
         const cityCode = features[0].properties.N03_007;
-        const cityName = features[0].properties.N03_004;
         const prefCode = features[0].properties.N03_007.slice(0, 2);
 
         //@ts-ignore
@@ -247,18 +268,19 @@ const Component = () => {
         const niniZahyouRate = calcZahyouRate(ninni_zahyou, special_chiban, total);
         const kokyoZahyouRate = calcZahyouRate(kokyo_zahyou, special_chiban, total);
 
+        const popup = popupContent(
+          name,
+          kokyoZahyouRate,
+          niniZahyouRate,
+          kokyo_zahyou,
+          ninni_zahyou,
+          total,
+          special_chiban
+        )
+
         new window.geolonia.Popup({ offset: 25 })
           .setLngLat(e.lngLat)
-          .setHTML(
-            `<div>
-              <h3>${cityName}</h3>
-              <ul>
-                <li>公共座標: ${kokyoZahyouRate}%（${formatNumber(kokyo_zahyou)}件）</li>
-                <li>任意座標: ${niniZahyouRate}%（${formatNumber(ninni_zahyou)}件）</li>
-                <li>合計: ${formatNumber(total - special_chiban)}件</li>
-              </ul>
-            </div>`
-          )
+          .setHTML(popup)
           .addTo(map);
 
       })
