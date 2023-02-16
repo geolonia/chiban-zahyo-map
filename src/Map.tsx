@@ -92,41 +92,27 @@ const Component = () => {
 
     map.once('load', () => {
 
-      if (!map.getSource('jp-pref')) {
-        map.addSource('jp-pref', {
-          type: 'vector',
-          url: 'https://cdn.geolonia.com/tiles/japanese-prefectures.json'
-        });
-      }
-
-      if (!map.getSource('jp-local-governments')) {
-        map.addSource('jp-local-governments', {
-          type: 'vector',
-          url: "https://tileserver.geolonia.com/jp-local-governments/tiles.json?key=YOUR-API-KEY",
-        });
-      }
-
       for (const prefCode in chibanJSON) {
         // @ts-ignore
         const value = chibanJSON[prefCode];
         const kokyoZahyouRatePref = calcZahyouRate(value.kokyo_zahyou, value.special_chiban, value.total);
 
-        if (!map.getLayer(`prefectures-${prefCode}`)) {
-          // 都道府県レイヤーを追加
-          map.addLayer({
-            "id": `prefectures-${prefCode}`,
-            "type": "fill",
-            "source": "jp-pref",
-            "source-layer": "prefectures",
-            "filter": ["==", "code", prefCode],
-            "paint": {
-              "fill-color": fillColorExpression(kokyoZahyouRatePref),
-              "fill-outline-color": "#000000"
-            }
-          },
-            'oc-label-town'
-          )
-        }
+        // if (!map.getLayer(`prefectures-${prefCode}`)) {
+        //   // 都道府県レイヤーを追加
+        //   map.addLayer({
+        //     "id": `prefectures-${prefCode}`,
+        //     "type": "fill",
+        //     "source": "jp-pref",
+        //     "source-layer": "prefectures",
+        //     "filter": ["==", "code", prefCode],
+        //     "paint": {
+        //       "fill-color": fillColorExpression(kokyoZahyouRatePref),
+        //       "fill-outline-color": "#000000"
+        //     }
+        //   },
+        //     'oc-label-town'
+        //   )
+        // }
 
         for (const key in value) {
 
@@ -140,22 +126,22 @@ const Component = () => {
 
           if (!map.getLayer(`city-${key}`)) {
             // 市区町村レイヤーを追加
-            map.addLayer({
-              "id": `city-${key}`,
-              "type": "fill",
-              "source": "jp-local-governments",
-              "source-layer": "jp-local-governments",
-              "filter": ["==", "N03_007", key],
-              "paint": {
-                "fill-color": fillColorExpression(kokyoZahyouRateCity),
-                "fill-outline-color": "#000000"
-              },
-              "layout": {
-                "visibility": "none"
-              }
-            },
-              'oc-label-town'
-            )
+            // map.addLayer({
+            //   "id": `city-${key}`,
+            //   "type": "fill",
+            //   "source": "jp-local-governments",
+            //   "source-layer": "jp-local-governments",
+            //   "filter": ["==", "N03_007", key],
+            //   "paint": {
+            //     "fill-color": fillColorExpression(kokyoZahyouRateCity),
+            //     "fill-outline-color": "#000000"
+            //   },
+            //   "layout": {
+            //     "visibility": "none"
+            //   }
+            // },
+            //   'oc-label-town'
+            // )
           }
 
         }
