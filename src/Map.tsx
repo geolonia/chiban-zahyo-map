@@ -51,10 +51,10 @@ const formatNumber = (num: number) => {
 
 const createPopupHTML = (popupObj: any) => {
 
-  const {name, data} = popupObj;
+  const { name, data } = popupObj;
 
   let tableContent = "";
-  for(const item of data) {
+  for (const item of data) {
     tableContent += `<tr class="border border-gray-300">
       <th class="border border-r-gray-300 font-normal py-1 px-2">${item.label}</th>
       <td class="py-1 px-2">${item.value}</td>
@@ -69,9 +69,26 @@ const createPopupHTML = (popupObj: any) => {
 </div>`
 }
 
+const currentSelectStyle = (
+  areaSelectRef: React.RefObject<HTMLSelectElement>,
+  dataSelectRef: React.RefObject<HTMLSelectElement>
+) => {
+
+  if (
+    areaSelectRef && areaSelectRef.current &&
+    dataSelectRef && dataSelectRef.current
+  ) {
+    return {
+      area: areaSelectRef.current.value,
+      data: dataSelectRef.current.value
+    }
+  }
+}
+
 const Component = () => {
   const mapContainer = React.useRef<HTMLDivElement>(null);
-  const selectRef = React.useRef<HTMLSelectElement>(null);
+  const areaSelectRef = React.useRef<HTMLSelectElement>(null);
+  const dataSelectRef = React.useRef<HTMLSelectElement>(null);
 
   React.useEffect(() => {
     const map = new window.geolonia.Map({
@@ -139,12 +156,16 @@ const Component = () => {
       }
 
       // レイヤーの表示切り替え
-      if (selectRef && selectRef.current) {
-        selectRef.current.addEventListener('change', (e: any) => {
+      if (
+        areaSelectRef && areaSelectRef.current &&
+        dataSelectRef && dataSelectRef.current
+      ) {
 
-          const selectLayer = e.target.value;
+        const switchLayer = (e: any) => {
 
-          if (selectLayer === 'chiban-kokyozahyo-count-pref') {
+          const select = currentSelectStyle(areaSelectRef, dataSelectRef);
+
+          if (select?.area === 'pref' && select?.data === 'count') {
 
             map.setLayoutProperty(`chiban-kokyozahyo-area-pref`, 'visibility', 'none');
             map.setLayoutProperty(`chiban-kokyozahyo-area-city`, 'visibility', 'none');
@@ -158,7 +179,7 @@ const Component = () => {
                 }
               }
             }
-          } else if (selectLayer === 'chiban-kokyozahyo-count-city') {
+          } else if (select?.area === 'city' && select?.data === 'count') {
 
             map.setLayoutProperty(`chiban-kokyozahyo-area-pref`, 'visibility', 'none');
             map.setLayoutProperty(`chiban-kokyozahyo-area-city`, 'visibility', 'none');
@@ -172,7 +193,7 @@ const Component = () => {
                 }
               }
             }
-          } else if (selectLayer === 'chiban-kokyozahyo-area-pref') {
+          } else if (select?.area === 'pref' && select?.data === 'area') {
 
             map.setLayoutProperty(`chiban-kokyozahyo-area-pref`, 'visibility', 'visible');
             map.setLayoutProperty(`chiban-kokyozahyo-area-city`, 'visibility', 'none');
@@ -186,7 +207,7 @@ const Component = () => {
                 }
               }
             }
-          } else if (selectLayer === 'chiban-kokyozahyo-area-city') {
+          } else if (select?.area === 'city' && select?.data === 'area') {
 
             map.setLayoutProperty(`chiban-kokyozahyo-area-pref`, 'visibility', 'none');
             map.setLayoutProperty(`chiban-kokyozahyo-area-city`, 'visibility', 'visible');
@@ -201,21 +222,27 @@ const Component = () => {
               }
             }
           }
-        })
+        }
+
+        areaSelectRef.current.addEventListener('change', switchLayer);
+        dataSelectRef.current.addEventListener('change', switchLayer);
+
       }
 
       map.on('click', (e: any) => {
 
         const features = map.queryRenderedFeatures(e.point);
 
-        if (!features.length || !selectRef || !selectRef.current) {
+        if (!features.length || !areaSelectRef || !areaSelectRef.current) {
           return;
         }
 
-        let popupContent:any = {};
+        const select = currentSelectStyle(areaSelectRef, dataSelectRef);
+
+        let popupContent: any = {};
 
         // 都道府県の公共座標件数割合
-        if (selectRef.current.value === 'chiban-kokyozahyo-count-pref') {
+        if (select?.area === 'pref' && select?.data === 'count') {
 
           popupContent["name"] = features[0].properties.name;
           const code = features[0].properties.code;
@@ -253,8 +280,8 @@ const Component = () => {
 
           popupContent["data"] = popupData;
 
-        // 市区町の公共座標件数割合
-        } else if (selectRef.current.value === 'chiban-kokyozahyo-count-city') {
+          // 市区町の公共座標件数割合
+        } else if (select?.area === 'city' && select?.data === 'count') {
 
           // データレイヤー以外をクリックした場合は処理を終了
           if (!features[0].properties.N03_007) {
@@ -294,10 +321,7 @@ const Component = () => {
 
           popupContent["data"] = popupData;
 
-        } else if (
-          selectRef.current.value === 'chiban-kokyozahyo-area-city' ||
-          selectRef.current.value === 'chiban-kokyozahyo-area-pref'
-        ) {
+        } else if (select?.data === 'area') {
 
           // データレイヤー以外をクリックした場合は処理を終了
           if (!features[0].properties.total_area) {
@@ -311,7 +335,7 @@ const Component = () => {
             kokyozahyo_area = 0;
           }
 
-          const kokyozahyoAreaRate = Math.round((kokyozahyo_area/total_area) * 100)
+          const kokyozahyoAreaRate = Math.round((kokyozahyo_area / total_area) * 100)
 
           const popupData = [
             {
@@ -340,29 +364,28 @@ const Component = () => {
       })
 
     })
-  },[]);
+  }, []);
 
   return (
     <>
       <div style={style} ref={mapContainer} />
       <select
         className='absolute top-[75px] right-[50px] z-10 text-[20px] w-[300px] p-0.5 border border-gray-200 rounded-lg shadow hover:bg-gray-100'
-        ref={selectRef}>
-        <option value='chiban-kokyozahyo-count-pref'>都道府県</option>
-        <option value='chiban-kokyozahyo-count-city'>市区町村</option>
-        <option value='chiban-kokyozahyo-area-pref'>都道府県</option>
-        <option value='chiban-kokyozahyo-area-city'>市区町村</option>
+        ref={areaSelectRef}>
+        <option value='pref'>都道府県</option>
+        <option value='city'>市区町村</option>
       </select>
       <select
         className='absolute top-[120px] right-[50px] z-10 text-[20px] w-[300px] p-0.5 border border-gray-200 rounded-lg shadow hover:bg-gray-100'
+        ref={dataSelectRef}
       >
-        <option value=''>件数</option>
-        <option value=''>面積</option>
+        <option value='count'>件数</option>
+        <option value='area'>面積</option>
       </select>
       <div className='absolute bottom-10 right-3 block pointer-events-none max-w-sm p-3 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100' >
         <div className='text-sm'>公共座標割合</div>
         <div className='flex items-center'>
-          <span className='block h-40 w-8 mr-2' style={{ background: `linear-gradient(${legendList.max.color}, ${legendList.min.color})`}}></span>
+          <span className='block h-40 w-8 mr-2' style={{ background: `linear-gradient(${legendList.max.color}, ${legendList.min.color})` }}></span>
           <div className='flex flex-col justify-between h-40'>
             {Object.keys(legendList).map((key) => {
               return (
