@@ -9,7 +9,7 @@ export default function Header() {
           <div className="mx-auto px-[16px] sm:px-6 lg:px-8">
             <div className="relative flex h-16 items-center justify-between">
               <div className="flex flex-1 items-center justify-between">
-                <div className="flex flex-shrink-0 items-center text-white text-[14px] md:text-base font-bold lg:text-xl">
+                <div className="flex flex-shrink-0 items-center text-white text-base font-bold lg:text-xl">
                   登記所備付地図データ 公共座標整理状況マップ
                 </div>
                 <a href="https://github.com/geolonia/chiban-kokyozahyo-area/blob/main/README.md" target="_blank" rel="noreferrer" className="group flex flex-col items-center ml-4 text-white font-medium hover:text-gray-300">
