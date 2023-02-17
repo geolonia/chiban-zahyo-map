@@ -42,7 +42,7 @@ const calcZahyouRate = (zahyou: number, special_chiban: number, total: number) =
     return 0;
   }
 
-  return Math.round(zahyou / (total - special_chiban) * 1000)/10;
+  return Math.round((zahyou / (total - special_chiban)) * 100);
 }
 
 const formatNumber = (num: number) => {
@@ -142,14 +142,70 @@ const Component = () => {
       if (selectRef && selectRef.current) {
         selectRef.current.addEventListener('change', (e: any) => {
 
-          const showPrefectures = e.target.value === 'kokyozahyo-count-pref';
+          const selectLayer = e.target.value;
 
-          for (const prefCode in chibanJSON) {
-            map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', showPrefectures ? 'visible' : 'none');
-            // @ts-ignore
-            for (const key in chibanJSON[prefCode]) {
-              if (!isNaN(Number(key))) {
-                map.setLayoutProperty(`city-${key}`, 'visibility', showPrefectures ? 'none' : 'visible');
+          if (selectLayer === 'chiban-kokyozahyo-count-pref') {
+
+            console.log('chiban-kokyozahyo-count-pref');
+
+            map.setLayoutProperty(`chiban-kokyozahyo-area-pref`, 'visibility', 'none');
+            map.setLayoutProperty(`chiban-kokyozahyo-area-city`, 'visibility', 'none');
+
+            for (const prefCode in chibanJSON) {
+              map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', 'visible');
+              // @ts-ignore
+              for (const key in chibanJSON[prefCode]) {
+                if (!isNaN(Number(key))) {
+                  map.setLayoutProperty(`city-${key}`, 'visibility', 'none');
+                }
+              }
+            }
+          } else if (selectLayer === 'chiban-kokyozahyo-count-city') {
+
+            console.log('chiban-kokyozahyo-count-city');
+
+            map.setLayoutProperty(`chiban-kokyozahyo-area-pref`, 'visibility', 'none');
+            map.setLayoutProperty(`chiban-kokyozahyo-area-city`, 'visibility', 'none');
+
+            for (const prefCode in chibanJSON) {
+              map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', 'none');
+              // @ts-ignore
+              for (const key in chibanJSON[prefCode]) {
+                if (!isNaN(Number(key))) {
+                  map.setLayoutProperty(`city-${key}`, 'visibility', 'visible');
+                }
+              }
+            }
+          } else if (selectLayer === 'chiban-kokyozahyo-area-pref') {
+
+            console.log('chiban-kokyozahyo-area-pref');
+
+            map.setLayoutProperty(`chiban-kokyozahyo-area-pref`, 'visibility', 'visible');
+            map.setLayoutProperty(`chiban-kokyozahyo-area-city`, 'visibility', 'none');
+
+            for (const prefCode in chibanJSON) {
+              map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', 'none');
+              // @ts-ignore
+              for (const key in chibanJSON[prefCode]) {
+                if (!isNaN(Number(key))) {
+                  map.setLayoutProperty(`city-${key}`, 'visibility', 'none');
+                }
+              }
+            }
+          } else if (selectLayer === 'chiban-kokyozahyo-area-city') {
+
+            console.log('chiban-kokyozahyo-area-city');
+
+            map.setLayoutProperty(`chiban-kokyozahyo-area-pref`, 'visibility', 'none');
+            map.setLayoutProperty(`chiban-kokyozahyo-area-city`, 'visibility', 'visible');
+
+            for (const prefCode in chibanJSON) {
+              map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', 'none');
+              // @ts-ignore
+              for (const key in chibanJSON[prefCode]) {
+                if (!isNaN(Number(key))) {
+                  map.setLayoutProperty(`city-${key}`, 'visibility', 'none');
+                }
               }
             }
           }
@@ -167,7 +223,7 @@ const Component = () => {
         let popupContent:any = {};
 
         // 都道府県の公共座標件数割合
-        if (selectRef.current.value === 'kokyozahyo-count-pref') {
+        if (selectRef.current.value === 'chiban-kokyozahyo-count-pref') {
 
           popupContent["name"] = features[0].properties.name;
           const code = features[0].properties.code;
@@ -206,7 +262,7 @@ const Component = () => {
           popupContent["data"] = popupData;
 
         // 市区町の公共座標件数割合
-        } else if (selectRef.current.value === 'kokyozahyo-count-city') {
+        } else if (selectRef.current.value === 'chiban-kokyozahyo-count-city') {
 
           // データレイヤー以外をクリックした場合は処理を終了
           if (!features[0].properties.N03_007) {
@@ -246,14 +302,23 @@ const Component = () => {
 
           popupContent["data"] = popupData;
 
-        } else if (selectRef.current.value == 'kokyozahyo-area-city') {
+        } else if (
+          selectRef.current.value === 'chiban-kokyozahyo-area-city' ||
+          selectRef.current.value === 'chiban-kokyozahyo-area-pref'
+        ) {
 
           // データレイヤー以外をクリックした場合は処理を終了
-          if (!features[0].properties.kokyozahyo_area) {
+          if (!features[0].properties.total_area) {
             return;
           }
           popupContent["name"] = features[0].properties.name;
-          const { kokyozahyo_area, total_area } = features[0].properties;
+          let { kokyozahyo_area, total_area } = features[0].properties;
+
+          // 公共座標面積がない場合は0を代入
+          if (!kokyozahyo_area) {
+            kokyozahyo_area = 0;
+          }
+
           const kokyozahyoAreaRate = Math.round((kokyozahyo_area/total_area) * 100)
 
           const popupData = [
@@ -263,37 +328,11 @@ const Component = () => {
             },
             {
               label: '公共座標面積',
-              value: `${formatNumber(kokyozahyo_area/1000000)}k㎡`
+              value: `${formatNumber(Math.round(kokyozahyo_area))}k㎡`
             },
             {
-              label: '合計面積',
-              value: `${formatNumber(total_area/1000000)}k㎡`
-            },
-          ]
-
-          popupContent["data"] = popupData;
-        } else if (selectRef.current.value == 'kokyozahyo-area-pref') {
-
-          // データレイヤー以外をクリックした場合は処理を終了
-          if (!features[0].properties.kokyozahyo_area) {
-            return;
-          }
-          popupContent["name"] = features[0].properties.name;
-          const { kokyozahyo_area, total_area } = features[0].properties;
-          const kokyozahyoAreaRate = Math.round((kokyozahyo_area/total_area) * 100)
-
-          const popupData = [
-            {
-              label: '公共座標割合',
-              value: `${kokyozahyoAreaRate}%`
-            },
-            {
-              label: '公共座標面積',
-              value: `${formatNumber(kokyozahyo_area/1000000)}k㎡`
-            },
-            {
-              label: '合計面積',
-              value: `${formatNumber(total_area/1000000)}k㎡`
+              label: '総面積',
+              value: `${formatNumber(Math.round(total_area))}k㎡`
             },
           ]
 
@@ -317,10 +356,10 @@ const Component = () => {
       <select
         className='absolute top-[75px] right-[50px] z-10 text-[20px] w-[300px] p-0.5 border border-gray-200 rounded-lg shadow hover:bg-gray-100'
         ref={selectRef}>
-        <option value='kokyozahyo-count-pref'>都道府県（公共座標件数割合）</option>
-        <option value='kokyozahyo-count-city'>市区町村（公共座標件数割合）</option>
-        <option value='kokyozahyo-area-pref'>都道府県（公共座標面積割合）</option>
-        <option value='kokyozahyo-area-city'>市区町村（公共座標面積割合）</option>
+        <option value='chiban-kokyozahyo-count-pref'>都道府県（公共座標件数割合）</option>
+        <option value='chiban-kokyozahyo-count-city'>市区町村（公共座標件数割合）</option>
+        <option value='chiban-kokyozahyo-area-pref'>都道府県（公共座標面積割合）</option>
+        <option value='chiban-kokyozahyo-area-city'>市区町村（公共座標面積割合）</option>
       </select>
       <div className='absolute bottom-10 right-3 block pointer-events-none max-w-sm p-3 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100' >
         <div className='text-sm'>公共座標割合</div>
