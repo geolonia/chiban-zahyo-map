@@ -340,7 +340,7 @@ const Component = () => {
           const popupData = [
             {
               label: '公共座標面積割合',
-              value: `${kokyozahyoAreaRate}%`
+              value: `約${kokyozahyoAreaRate}%`
             },
             {
               label: '公共座標面積',
@@ -348,7 +348,7 @@ const Component = () => {
             },
             {
               label: '総面積',
-              value: `${formatNumber(Math.round(total_area))}k㎡`
+              value: `約${formatNumber(Math.round(total_area))}k㎡`
             },
           ]
 
