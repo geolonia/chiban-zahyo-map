@@ -344,7 +344,7 @@ const Component = () => {
             },
             {
               label: '公共座標面積',
-              value: `${formatNumber(Math.round(kokyozahyo_area))}k㎡`
+              value: `約${formatNumber(Math.round(kokyozahyo_area))}k㎡`
             },
             {
               label: '総面積',
