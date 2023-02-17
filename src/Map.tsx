@@ -370,13 +370,13 @@ const Component = () => {
     <>
       <div style={style} ref={mapContainer} />
       <select
-        className='absolute top-[75px] right-[50px] z-10 text-[20px] w-[300px] p-0.5 border border-gray-200 rounded-lg shadow hover:bg-gray-100'
+        className='absolute top-[75px] right-[210px] z-10 text-[20px] w-[150px] p-0.5 border border-gray-200 rounded-lg shadow hover:bg-gray-100'
         ref={areaSelectRef}>
         <option value='pref'>都道府県</option>
         <option value='city'>市区町村</option>
       </select>
       <select
-        className='absolute top-[120px] right-[50px] z-10 text-[20px] w-[300px] p-0.5 border border-gray-200 rounded-lg shadow hover:bg-gray-100'
+        className='absolute top-[75px] right-[50px] z-10 text-[20px] w-[150px] p-0.5 border border-gray-200 rounded-lg shadow hover:bg-gray-100'
         ref={dataSelectRef}
       >
         <option value='count'>件数</option>
