@@ -2,6 +2,10 @@
   text-align: center;
 }
 
+.mapboxgl-popup-content, .maplibregl-popup-content {
+  padding: 15px;
+}
+
 .maplibregl-popup-close-button.mapboxgl-popup-close-button {
   font-size: 25px;
   padding: 6px 10px 10px 10px;

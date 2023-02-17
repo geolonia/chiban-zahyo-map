@@ -63,7 +63,7 @@ const createPopupHTML = (popupObj: any) => {
 
   return `<div>
   <h3 class="text-sm font-bold mb-1">${name}</h3>
-  <table class="border border-gray-300">
+  <table class="m-auto min-w-[200px] border border-gray-300">
     ${tableContent}
   </table>
 </div>`
@@ -146,8 +146,6 @@ const Component = () => {
 
           if (selectLayer === 'chiban-kokyozahyo-count-pref') {
 
-            console.log('chiban-kokyozahyo-count-pref');
-
             map.setLayoutProperty(`chiban-kokyozahyo-area-pref`, 'visibility', 'none');
             map.setLayoutProperty(`chiban-kokyozahyo-area-city`, 'visibility', 'none');
 
@@ -161,8 +159,6 @@ const Component = () => {
               }
             }
           } else if (selectLayer === 'chiban-kokyozahyo-count-city') {
-
-            console.log('chiban-kokyozahyo-count-city');
 
             map.setLayoutProperty(`chiban-kokyozahyo-area-pref`, 'visibility', 'none');
             map.setLayoutProperty(`chiban-kokyozahyo-area-city`, 'visibility', 'none');
@@ -178,8 +174,6 @@ const Component = () => {
             }
           } else if (selectLayer === 'chiban-kokyozahyo-area-pref') {
 
-            console.log('chiban-kokyozahyo-area-pref');
-
             map.setLayoutProperty(`chiban-kokyozahyo-area-pref`, 'visibility', 'visible');
             map.setLayoutProperty(`chiban-kokyozahyo-area-city`, 'visibility', 'none');
 
@@ -193,8 +187,6 @@ const Component = () => {
               }
             }
           } else if (selectLayer === 'chiban-kokyozahyo-area-city') {
-
-            console.log('chiban-kokyozahyo-area-city');
 
             map.setLayoutProperty(`chiban-kokyozahyo-area-pref`, 'visibility', 'none');
             map.setLayoutProperty(`chiban-kokyozahyo-area-city`, 'visibility', 'visible');
@@ -341,7 +333,7 @@ const Component = () => {
 
         const popupHTML = createPopupHTML(popupContent)
 
-        new window.geolonia.Popup({ offset: 25 })
+        new window.geolonia.Popup({ offset: 25, maxWidth: 500 })
           .setLngLat(e.lngLat)
           .setHTML(popupHTML)
           .addTo(map);
