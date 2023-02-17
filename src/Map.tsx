@@ -42,45 +42,53 @@ const calcZahyouRate = (zahyou: number, special_chiban: number, total: number) =
     return 0;
   }
 
-  return Math.round(zahyou / (total - special_chiban) * 1000)/10;
+  return Math.round((zahyou / (total - special_chiban)) * 100);
 }
 
 const formatNumber = (num: number) => {
   return num.toLocaleString()
 }
 
-const popupContent = (
-  name:string,
-  kokyoZahyouRate:number,
-  niniZahyouRate:number,
-  kokyo_zahyou:number,
-  ninni_zahyou:number,
-  total:number,
-  special_chiban:number
-  ) => {
+const createPopupHTML = (popupObj: any) => {
+
+  const { name, data } = popupObj;
+
+  let tableContent = "";
+  for (const item of data) {
+    tableContent += `<tr class="border border-gray-300">
+      <th class="border border-r-gray-300 font-normal py-1 px-2">${item.label}</th>
+      <td class="py-1 px-2">${item.value}</td>
+    </tr>`
+  };
 
   return `<div>
   <h3 class="text-sm font-bold mb-1">${name}</h3>
-  <table class="border border-gray-300">
-    <tr class="border border-gray-300">
-      <th class="border border-r-gray-300 font-normal py-1 px-2">公共座標</th>
-      <td class="py-1 px-2">${kokyoZahyouRate}%（${formatNumber(kokyo_zahyou)}件）</td>
-    </tr>
-    <tr class="border border-gray-300">
-      <th class="border border-r-gray-300 font-normal py-1 px-2">任意座標</th>
-      <td class="py-1 px-2">${niniZahyouRate}%（${formatNumber(ninni_zahyou)}件）</td>
-    </tr>
-    <tr class="border border-gray-300">
-      <th class="border border-r-gray-300 font-normal py-1 px-2">合計</th>
-      <td class="py-1 px-2">${formatNumber(total - special_chiban)}件</td>
-    </tr>
+  <table class="m-auto min-w-[200px] border border-gray-300">
+    ${tableContent}
   </table>
 </div>`
 }
 
+const currentSelectStyle = (
+  areaSelectRef: React.RefObject<HTMLSelectElement>,
+  dataSelectRef: React.RefObject<HTMLSelectElement>
+) => {
+
+  if (
+    areaSelectRef && areaSelectRef.current &&
+    dataSelectRef && dataSelectRef.current
+  ) {
+    return {
+      area: areaSelectRef.current.value,
+      data: dataSelectRef.current.value
+    }
+  }
+}
+
 const Component = () => {
   const mapContainer = React.useRef<HTMLDivElement>(null);
-  const selectRef = React.useRef<HTMLSelectElement>(null);
+  const areaSelectRef = React.useRef<HTMLSelectElement>(null);
+  const dataSelectRef = React.useRef<HTMLSelectElement>(null);
 
   React.useEffect(() => {
     const map = new window.geolonia.Map({
@@ -91,20 +99,6 @@ const Component = () => {
     })
 
     map.once('load', () => {
-
-      if (!map.getSource('jp-pref')) {
-        map.addSource('jp-pref', {
-          type: 'vector',
-          url: 'https://cdn.geolonia.com/tiles/japanese-prefectures.json'
-        });
-      }
-
-      if (!map.getSource('jp-local-governments')) {
-        map.addSource('jp-local-governments', {
-          type: 'vector',
-          url: "https://tileserver.geolonia.com/jp-local-governments/tiles.json?key=YOUR-API-KEY",
-        });
-      }
 
       for (const prefCode in chibanJSON) {
         // @ts-ignore
@@ -162,36 +156,95 @@ const Component = () => {
       }
 
       // レイヤーの表示切り替え
-      if (selectRef && selectRef.current) {
-        selectRef.current.addEventListener('change', (e: any) => {
+      if (
+        areaSelectRef && areaSelectRef.current &&
+        dataSelectRef && dataSelectRef.current
+      ) {
 
-          const showPrefectures = e.target.value === 'prefecture';
+        const switchLayer = (e: any) => {
 
-          for (const prefCode in chibanJSON) {
-            map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', showPrefectures ? 'visible' : 'none');
-            // @ts-ignore
-            for (const key in chibanJSON[prefCode]) {
-              if (!isNaN(Number(key))) {
-                map.setLayoutProperty(`city-${key}`, 'visibility', showPrefectures ? 'none' : 'visible');
+          const select = currentSelectStyle(areaSelectRef, dataSelectRef);
+
+          if (select?.area === 'pref' && select?.data === 'count') {
+
+            map.setLayoutProperty(`chiban-kokyozahyo-area-pref`, 'visibility', 'none');
+            map.setLayoutProperty(`chiban-kokyozahyo-area-city`, 'visibility', 'none');
+
+            for (const prefCode in chibanJSON) {
+              map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', 'visible');
+              // @ts-ignore
+              for (const key in chibanJSON[prefCode]) {
+                if (!isNaN(Number(key))) {
+                  map.setLayoutProperty(`city-${key}`, 'visibility', 'none');
+                }
+              }
+            }
+          } else if (select?.area === 'city' && select?.data === 'count') {
+
+            map.setLayoutProperty(`chiban-kokyozahyo-area-pref`, 'visibility', 'none');
+            map.setLayoutProperty(`chiban-kokyozahyo-area-city`, 'visibility', 'none');
+
+            for (const prefCode in chibanJSON) {
+              map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', 'none');
+              // @ts-ignore
+              for (const key in chibanJSON[prefCode]) {
+                if (!isNaN(Number(key))) {
+                  map.setLayoutProperty(`city-${key}`, 'visibility', 'visible');
+                }
+              }
+            }
+          } else if (select?.area === 'pref' && select?.data === 'area') {
+
+            map.setLayoutProperty(`chiban-kokyozahyo-area-pref`, 'visibility', 'visible');
+            map.setLayoutProperty(`chiban-kokyozahyo-area-city`, 'visibility', 'none');
+
+            for (const prefCode in chibanJSON) {
+              map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', 'none');
+              // @ts-ignore
+              for (const key in chibanJSON[prefCode]) {
+                if (!isNaN(Number(key))) {
+                  map.setLayoutProperty(`city-${key}`, 'visibility', 'none');
+                }
+              }
+            }
+          } else if (select?.area === 'city' && select?.data === 'area') {
+
+            map.setLayoutProperty(`chiban-kokyozahyo-area-pref`, 'visibility', 'none');
+            map.setLayoutProperty(`chiban-kokyozahyo-area-city`, 'visibility', 'visible');
+
+            for (const prefCode in chibanJSON) {
+              map.setLayoutProperty(`prefectures-${prefCode}`, 'visibility', 'none');
+              // @ts-ignore
+              for (const key in chibanJSON[prefCode]) {
+                if (!isNaN(Number(key))) {
+                  map.setLayoutProperty(`city-${key}`, 'visibility', 'none');
+                }
               }
             }
           }
-        })
+        }
+
+        areaSelectRef.current.addEventListener('change', switchLayer);
+        dataSelectRef.current.addEventListener('change', switchLayer);
+
       }
 
       map.on('click', (e: any) => {
 
         const features = map.queryRenderedFeatures(e.point);
 
-        if (!features.length || !selectRef || !selectRef.current) {
+        if (!features.length || !areaSelectRef || !areaSelectRef.current) {
           return;
         }
 
-        let name, kokyoZahyouRate, niniZahyouRate, kokyo_zahyou, ninni_zahyou, total, special_chiban;
+        const select = currentSelectStyle(areaSelectRef, dataSelectRef);
 
-        if (selectRef.current.value === 'prefecture') {
+        let popupContent: any = {};
 
-          name = features[0].properties.name;
+        // 都道府県の公共座標件数割合
+        if (select?.area === 'pref' && select?.data === 'count') {
+
+          popupContent["name"] = features[0].properties.name;
           const code = features[0].properties.code;
 
           // データレイヤー以外をクリックした場合は処理を終了
@@ -200,72 +253,139 @@ const Component = () => {
           }
 
           // @ts-ignore
-          ninni_zahyou = chibanJSON[code].ninni_zahyou;
+          const ninni_zahyou = chibanJSON[code].ninni_zahyou;
           // @ts-ignore
-          kokyo_zahyou = chibanJSON[code].kokyo_zahyou;
+          const kokyo_zahyou = chibanJSON[code].kokyo_zahyou;
           // @ts-ignore
-          special_chiban = chibanJSON[code].special_chiban;
+          const special_chiban = chibanJSON[code].special_chiban;
           // @ts-ignore
-          total = chibanJSON[code].total;
-          niniZahyouRate = calcZahyouRate(ninni_zahyou, special_chiban, total)
-          kokyoZahyouRate = calcZahyouRate(kokyo_zahyou, special_chiban, total)
-          
-        } else {
+          const total = chibanJSON[code].total;
+          const niniZahyouRate = calcZahyouRate(ninni_zahyou, special_chiban, total)
+          const kokyoZahyouRate = calcZahyouRate(kokyo_zahyou, special_chiban, total)
+
+          const popupData = [
+            {
+              label: '公共座標',
+              value: `${kokyoZahyouRate}%（${formatNumber(kokyo_zahyou)}件）`
+            },
+            {
+              label: '任意座標',
+              value: `${niniZahyouRate}%（${formatNumber(ninni_zahyou)}件）`
+            },
+            {
+              label: '合計',
+              value: `${formatNumber(total - special_chiban)}件`
+            },
+          ]
+
+          popupContent["data"] = popupData;
+
+          // 市区町の公共座標件数割合
+        } else if (select?.area === 'city' && select?.data === 'count') {
 
           // データレイヤー以外をクリックした場合は処理を終了
           if (!features[0].properties.N03_007) {
             return;
           }
 
-          name = features[0].properties.N03_004;
+          popupContent["name"] = features[0].properties.N03_004;
           const cityCode = features[0].properties.N03_007;
           const prefCode = features[0].properties.N03_007.slice(0, 2);
 
           // @ts-ignore
-          ninni_zahyou = chibanJSON[prefCode][cityCode].ninni_zahyou;
+          const ninni_zahyou = chibanJSON[prefCode][cityCode].ninni_zahyou;
           // @ts-ignore
-          kokyo_zahyou = chibanJSON[prefCode][cityCode].kokyo_zahyou;
+          const kokyo_zahyou = chibanJSON[prefCode][cityCode].kokyo_zahyou;
           // @ts-ignore
-          special_chiban = chibanJSON[prefCode][cityCode].special_chiban;
+          const special_chiban = chibanJSON[prefCode][cityCode].special_chiban;
           // @ts-ignore
-          total = chibanJSON[prefCode][cityCode].total;
+          const total = chibanJSON[prefCode][cityCode].total;
 
-          niniZahyouRate = calcZahyouRate(ninni_zahyou, special_chiban, total);
-          kokyoZahyouRate = calcZahyouRate(kokyo_zahyou, special_chiban, total);
+          const niniZahyouRate = calcZahyouRate(ninni_zahyou, special_chiban, total);
+          const kokyoZahyouRate = calcZahyouRate(kokyo_zahyou, special_chiban, total);
+
+          const popupData = [
+            {
+              label: '公共座標',
+              value: `${kokyoZahyouRate}%（${formatNumber(kokyo_zahyou)}件）`
+            },
+            {
+              label: '任意座標',
+              value: `${niniZahyouRate}%（${formatNumber(ninni_zahyou)}件）`
+            },
+            {
+              label: '合計',
+              value: `${formatNumber(total - special_chiban)}件`
+            },
+          ]
+
+          popupContent["data"] = popupData;
+
+        } else if (select?.data === 'area') {
+
+          // データレイヤー以外をクリックした場合は処理を終了
+          if (!features[0].properties.total_area) {
+            return;
+          }
+          popupContent["name"] = features[0].properties.name;
+          let { kokyozahyo_area, total_area } = features[0].properties;
+
+          // 公共座標面積がない場合は0を代入
+          if (!kokyozahyo_area) {
+            kokyozahyo_area = 0;
+          }
+
+          const kokyozahyoAreaRate = Math.round((kokyozahyo_area / total_area) * 100)
+
+          const popupData = [
+            {
+              label: '公共座標面積割合',
+              value: `${kokyozahyoAreaRate}%`
+            },
+            {
+              label: '公共座標面積',
+              value: `${formatNumber(Math.round(kokyozahyo_area))}k㎡`
+            },
+            {
+              label: '総面積',
+              value: `${formatNumber(Math.round(total_area))}k㎡`
+            },
+          ]
+
+          popupContent["data"] = popupData;
         }
 
-        const popup = popupContent(
-          name,
-          kokyoZahyouRate,
-          niniZahyouRate,
-          kokyo_zahyou,
-          ninni_zahyou,
-          total,
-          special_chiban
-        )
+        const popupHTML = createPopupHTML(popupContent)
 
-        new window.geolonia.Popup({ offset: 25 })
+        new window.geolonia.Popup({ offset: 25, maxWidth: 500 })
           .setLngLat(e.lngLat)
-          .setHTML(popup)
+          .setHTML(popupHTML)
           .addTo(map);
       })
 
     })
-  },[]);
+  }, []);
 
   return (
     <>
       <div style={style} ref={mapContainer} />
       <select
-        className='absolute top-[75px] right-[50px] z-10 text-[20px] w-[300px] p-0.5 border border-gray-200 rounded-lg shadow hover:bg-gray-100'
-        ref={selectRef}>
-        <option value='prefecture'>都道府県</option>
+        className='absolute top-[75px] right-[210px] z-10 text-[20px] w-[150px] p-0.5 border border-gray-200 rounded-lg shadow hover:bg-gray-100'
+        ref={areaSelectRef}>
+        <option value='pref'>都道府県</option>
         <option value='city'>市区町村</option>
+      </select>
+      <select
+        className='absolute top-[75px] right-[50px] z-10 text-[20px] w-[150px] p-0.5 border border-gray-200 rounded-lg shadow hover:bg-gray-100'
+        ref={dataSelectRef}
+      >
+        <option value='count'>件数</option>
+        <option value='area'>面積</option>
       </select>
       <div className='absolute bottom-10 right-3 block pointer-events-none max-w-sm p-3 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100' >
         <div className='text-sm'>公共座標割合</div>
         <div className='flex items-center'>
-          <span className='block h-40 w-8 mr-2' style={{ background: `linear-gradient(${legendList.max.color}, ${legendList.min.color})`}}></span>
+          <span className='block h-40 w-8 mr-2' style={{ background: `linear-gradient(${legendList.max.color}, ${legendList.min.color})` }}></span>
           <div className='flex flex-col justify-between h-40'>
             {Object.keys(legendList).map((key) => {
               return (
