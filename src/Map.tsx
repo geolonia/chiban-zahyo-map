@@ -315,7 +315,7 @@ const Component = () => {
 
           const popupData = [
             {
-              label: '公共座標割合',
+              label: '公共座標面積割合',
               value: `${kokyozahyoAreaRate}%`
             },
             {
@@ -348,10 +348,16 @@ const Component = () => {
       <select
         className='absolute top-[75px] right-[50px] z-10 text-[20px] w-[300px] p-0.5 border border-gray-200 rounded-lg shadow hover:bg-gray-100'
         ref={selectRef}>
-        <option value='chiban-kokyozahyo-count-pref'>都道府県（公共座標件数割合）</option>
-        <option value='chiban-kokyozahyo-count-city'>市区町村（公共座標件数割合）</option>
-        <option value='chiban-kokyozahyo-area-pref'>都道府県（公共座標面積割合）</option>
-        <option value='chiban-kokyozahyo-area-city'>市区町村（公共座標面積割合）</option>
+        <option value='chiban-kokyozahyo-count-pref'>都道府県</option>
+        <option value='chiban-kokyozahyo-count-city'>市区町村</option>
+        <option value='chiban-kokyozahyo-area-pref'>都道府県</option>
+        <option value='chiban-kokyozahyo-area-city'>市区町村</option>
+      </select>
+      <select
+        className='absolute top-[120px] right-[50px] z-10 text-[20px] w-[300px] p-0.5 border border-gray-200 rounded-lg shadow hover:bg-gray-100'
+      >
+        <option value=''>件数</option>
+        <option value=''>面積</option>
       </select>
       <div className='absolute bottom-10 right-3 block pointer-events-none max-w-sm p-3 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100' >
         <div className='text-sm'>公共座標割合</div>
