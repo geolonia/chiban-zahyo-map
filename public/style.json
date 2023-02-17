@@ -6737,6 +6737,9 @@
           "#ff0000"
         ],
         "fill-outline-color": "#000000"
+      },
+      "layout": {
+        "visibility": "none"
       }
     },
     {
