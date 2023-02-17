@@ -52,7 +52,7 @@ const formatNumber = (num: number) => {
 const createPopupHTML = (popupObj: any) => {
 
   const {name, data} = popupObj;
-  
+
   let tableContent = "";
   for(const item of data) {
     tableContent += `<tr class="border border-gray-300">
@@ -247,8 +247,57 @@ const Component = () => {
           popupContent["data"] = popupData;
 
         } else if (selectRef.current.value == 'kokyozahyo-area-city') {
-          console.log('kokyozahyo-area-city');
 
+          // データレイヤー以外をクリックした場合は処理を終了
+          if (!features[0].properties.kokyozahyo_area) {
+            return;
+          }
+          popupContent["name"] = features[0].properties.name;
+          const { kokyozahyo_area, total_area } = features[0].properties;
+          const kokyozahyoAreaRate = Math.round((kokyozahyo_area/total_area) * 100)
+
+          const popupData = [
+            {
+              label: '公共座標割合',
+              value: `${kokyozahyoAreaRate}%`
+            },
+            {
+              label: '公共座標面積',
+              value: `${formatNumber(kokyozahyo_area/1000000)}k㎡`
+            },
+            {
+              label: '合計面積',
+              value: `${formatNumber(total_area/1000000)}k㎡`
+            },
+          ]
+
+          popupContent["data"] = popupData;
+        } else if (selectRef.current.value == 'kokyozahyo-area-pref') {
+
+          // データレイヤー以外をクリックした場合は処理を終了
+          if (!features[0].properties.kokyozahyo_area) {
+            return;
+          }
+          popupContent["name"] = features[0].properties.name;
+          const { kokyozahyo_area, total_area } = features[0].properties;
+          const kokyozahyoAreaRate = Math.round((kokyozahyo_area/total_area) * 100)
+
+          const popupData = [
+            {
+              label: '公共座標割合',
+              value: `${kokyozahyoAreaRate}%`
+            },
+            {
+              label: '公共座標面積',
+              value: `${formatNumber(kokyozahyo_area/1000000)}k㎡`
+            },
+            {
+              label: '合計面積',
+              value: `${formatNumber(total_area/1000000)}k㎡`
+            },
+          ]
+
+          popupContent["data"] = popupData;
         }
 
         const popupHTML = createPopupHTML(popupContent)
