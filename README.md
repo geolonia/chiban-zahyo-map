@@ -14,3 +14,4 @@ https://github.com/geolonia/moj-counts
 
 - [「登記所備付データ」（法務省）](https://front.geospatial.jp/houmu-chiseki/)を加工して作成（数値以外で始まる地番住所は除外しています）
 - [「国土数値情報（行政区域データ）」（国土交通省）](https://nlftp.mlit.go.jp/ksj/gml/datalist/KsjTmplt-N03-v3_1.html)を加工して作成
+
