@@ -399,7 +399,7 @@ const Component = () => {
       </div>
       <div className='absolute bottom-0 py-px px-9 text-[8px] text-left  bg-white sm:max-w-lg lg:max-w-none lg:right-[270px] lg:text-[12px] lg:px-2'>
         <span><a className=' text-blue-600 hover:underline' href="https://front.geospatial.jp/houmu-chiseki/" target="_blank" rel="noreferrer">「登記所備付データ」（法務省）</a>を加工して作成。</span>
-        <span><a className='text-blue-600 hover:underline' href="https://geolonia.github.io/chiban-kokyozahyo-area/" target="_blank" rel="noreferrer">使用データ、計算方法についてはこちら</a></span>
+        <span><a className='text-blue-600 hover:underline' href="https://geolonia.github.io/chiban-kokyozahyo-area/" target="_blank" rel="noreferrer">使用データ及び集計方法について</a></span>
       </div>
     </>
   );
