@@ -265,11 +265,11 @@ const Component = () => {
 
           const popupData = [
             {
-              label: '公共座標',
+              label: '公共座標の筆数',
               value: `${kokyoZahyouRate}%（${formatNumber(kokyo_zahyou)}件）`
             },
             {
-              label: '任意座標',
+              label: '任意座標の筆数',
               value: `${niniZahyouRate}%（${formatNumber(ninni_zahyou)}件）`
             },
             {
@@ -306,11 +306,11 @@ const Component = () => {
 
           const popupData = [
             {
-              label: '公共座標',
+              label: '公共座標の筆数',
               value: `${kokyoZahyouRate}%（${formatNumber(kokyo_zahyou)}件）`
             },
             {
-              label: '任意座標',
+              label: '任意座標の筆数',
               value: `${niniZahyouRate}%（${formatNumber(ninni_zahyou)}件）`
             },
             {
@@ -339,11 +339,11 @@ const Component = () => {
 
           const popupData = [
             {
-              label: '公共座標面積割合',
+              label: '公共座標の筆の面積比率',
               value: `約${kokyozahyoAreaRate}%`
             },
             {
-              label: '公共座標面積',
+              label: '公共座標の筆の総面積',
               value: `約${formatNumber(Math.round(kokyozahyo_area))}k㎡`
             },
             {
@@ -379,7 +379,7 @@ const Component = () => {
         className='absolute top-[75px] right-[50px] z-10 text-[20px] w-[150px] p-0.5 border border-gray-200 rounded-lg shadow hover:bg-gray-100'
         ref={dataSelectRef}
       >
-        <option value='count'>件数</option>
+        <option value='count'>筆数</option>
         <option value='area'>面積</option>
       </select>
       <div className='absolute bottom-10 right-3 block pointer-events-none max-w-sm p-3 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100' >
