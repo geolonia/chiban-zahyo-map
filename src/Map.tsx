@@ -96,6 +96,7 @@ const Component = () => {
       zoom: 5,
       center: [140.14, 37.26],
       style: './style.json',
+      hash: true,
     })
 
     map.once('load', () => {
